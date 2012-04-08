@@ -33,13 +33,18 @@ Prepare to get your hands a little dirty...
 Step 1: Capture the trace information for runtime argument types.
 
 Profiling a running program is slow so the tracer is restricted to profiling methods within
-a single python source file at a time. On fast machine you could change this if you like.
+a single python source file at a time. On a fast machine you can change this if you like.
 
 Assuming you have a python program, started using a main(args) method.
 
-Copy tracer/trace.py into your application's directory. Edit trace.py and update
-TRACE_BASE = "/home/chris/ab/gamemenu.py" with the name of the python script file
-you wish to profile. For example gamemenu.py
+Copy tracer/trace.py into your application's directory (the directory of the file where the main(args) method is located). 
+
+Edit trace.py and update
+TRACE_BASE = "/home/chris/ab/gamemenu.py" with the path to the python script file
+you wish to profile. In this example `gamemenu.py`.
+
+Change the `import` statement to import everything from the file containing main():
+    from gameengine import *
 
 Run your application using python trace.py
 
