@@ -22,6 +22,7 @@
 
 import sys
 import inspect
+from types import *
 from gameengine import *
 
 TRACE_BASE = "/home/chris/ab/gamemenu.py"
@@ -43,8 +44,15 @@ def traceit(frame, event, arg):
 				arg_values = inspect.getargvalues(frame)
 				args = ""
 				for a in arg_values.args:
-					if a != "self":
-						args += ":%s,%s" % (a, arg_values.locals[a].__class__.__name__)
+					if type(a) is StringType:
+						if a != "self":
+							a_value = arg_values.locals[a]
+							a_type = a_value.__class__.__name__
+							args += ":%s,%s" % (a, a_type)
+					elif type(a) is ListType: # ListType is not hashable
+						args += ":anonymous_list,%s" % (a)
+					else:
+						print "Unexpected type for %s: %s" % (a, type(a))
 			
 
 				trace_data[key] = args
