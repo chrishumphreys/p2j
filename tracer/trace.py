@@ -29,6 +29,22 @@ TRACE_BASE = "/home/chris/ab/gamemenu.py"
 
 trace_data = dict()
 
+
+def describe_arg(a, arg_values):
+	if type(a) is StringType:
+		if a != "self":
+			a_value = arg_values.locals[a]
+			a_type = a_value.__class__.__name__
+			return ":%s,%s" % (a, a_type)
+		else:
+			return ""
+	elif type(a) is ListType: # ListType is not hashable
+		return ":anonymous_list,%s" % (a)
+	else:
+		print "Unexpected type for %s: %s" % (a, type(a))
+		return ""
+
+
 def traceit(frame, event, arg):
 
 	#http://docs.python.org/library/sys.html#sys.settrace
@@ -44,17 +60,7 @@ def traceit(frame, event, arg):
 				arg_values = inspect.getargvalues(frame)
 				args = ""
 				for a in arg_values.args:
-					if type(a) is StringType:
-						if a != "self":
-							a_value = arg_values.locals[a]
-							a_type = a_value.__class__.__name__
-							args += ":%s,%s" % (a, a_type)
-					elif type(a) is ListType: # ListType is not hashable
-						args += ":anonymous_list,%s" % (a)
-					else:
-						print "Unexpected type for %s: %s" % (a, type(a))
-			
-
+					args += describe_arg(a, arg_values)
 				trace_data[key] = args
 				print "%s:%d:%s%s" % (frame_info.filename, frame_info.lineno, frame_info.function, args)
 
@@ -65,5 +71,7 @@ if __name__ == '__main__':
 	print "starting"
 	sys.settrace(traceit)
 
-	main(sys.argv[1:])	
+	main(sys.argv[1:])
+
+	#print "%s" % trace_data
 
