@@ -28,6 +28,7 @@ from gameengine import *
 TRACE_BASE = "/home/chris/ab/gamemenu.py"
 
 trace_data = dict()
+trace_return_data = dict()
 
 
 def describe_arg(a, arg_values):
@@ -49,20 +50,25 @@ def traceit(frame, event, arg):
 
 	#http://docs.python.org/library/sys.html#sys.settrace
 	#http://docs.python.org/library/inspect.html
-	if event == "call":
+	if event == "call" or event == "return":
 		filename = frame.f_code.co_filename
 		if filename[0:len(TRACE_BASE)] == TRACE_BASE:
 
 			frame_info = inspect.getframeinfo(frame)
 			key = frame_info.filename + ":" + str(frame_info.lineno) + ":" + frame_info.function
 
-			if not key in trace_data:
+			if event == "call" and not key in trace_data:
 				arg_values = inspect.getargvalues(frame)
 				args = ""
 				for a in arg_values.args:
 					args += describe_arg(a, arg_values)
 				trace_data[key] = args
-				print "%s:%d:%s%s" % (frame_info.filename, frame_info.lineno, frame_info.function, args)
+				print key + args
+			elif event == "return" and not key in trace_return_data:
+				if arg == None:
+					trace_return_data[key] = "void"
+				else:
+					trace_return_data[key] = "%s" % (type(arg))
 
 	return traceit
 
@@ -74,4 +80,5 @@ if __name__ == '__main__':
 	main(sys.argv[1:])
 
 	#print "%s" % trace_data
+	#print "%s" % trace_return_data
 
