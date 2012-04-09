@@ -30,7 +30,7 @@ TRACE_FILENAME='.trace'
 
 def translate_files(input_filename):
 
-	pathname = "/home/chris/ab/" + input_filename
+	pathname = os.getcwd() + "/" + input_filename
 
 	#load argument trace file
 	args = ArgTrace.load_trace_file(input_filename + TRACE_FILENAME)
