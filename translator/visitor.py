@@ -21,6 +21,7 @@
 import ast
 
 from collections import deque
+from types import *
 
 from transbits import *
 
@@ -119,9 +120,20 @@ class MyVisitor(ast.NodeVisitor):
 		#print "Line no: %d method %s" % (lineno, method_name)
 		if self.arg_trace:
 			for arg in arguments.list:
-				typ = self.arg_trace.find_method_arg(self.python_filename, lineno, method_name, arg.name)
-				arg.set_type(typ)
-				#print "argument %s type %s" % (arg.name, typ)
+				arg_name = ""
+				if isinstance(arg, JavaVariable):
+					arg_name = arg.name
+				elif isinstance(arg, JavaTuple):
+					arg_name = "anonymous_list"
+
+				if arg_name is "":
+					arg_name = "unknown_arg"
+					type = "unknown_type"
+				else:
+					type = self.arg_trace.find_method_arg(self.python_filename, lineno, method_name, arg_name)
+
+				arg.set_type(type)
+				print "argument %s type %s" % (arg_name, type)
 
 	def visit_arguments(self, node):
 		if DEBUG: 

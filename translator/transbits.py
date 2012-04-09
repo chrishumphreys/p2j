@@ -360,6 +360,12 @@ class JavaList():
 class JavaTuple(JavaList):
 	def __init__(self):
 		JavaList.__init__(self)
+		self.name = "anonymous_list"
+		self.type_name = None
+
+	def set_type(self, typename):
+		self.type_name = typename
+
 
 class JavaArgsList(JavaList):
 	def __init__(self):
