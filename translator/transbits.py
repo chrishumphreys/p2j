@@ -22,7 +22,7 @@
 class JavaClass():
 
 	def __init__(self, name, supers, body):
-		self.name=name
+		self.name = name
 		self.supers = supers
 		self.functions = body
 		body.set_parent(self)
@@ -88,7 +88,7 @@ class JavaAssign():
 				#allow the target to process the assignment...
 				self.target.emit_store(e, self.value)
 		else:
-			#process the assignment in normal manner...
+			#process the assignment in the normal manner...
 			self.target.emit(e)
 			e.emit(" = ")
 			self.value.emit(e)
@@ -385,7 +385,7 @@ class JavaStatements():
 	def emit(self,e):
 		for i in range(0, len(self.list)):
 			newline = False
-			#This is a hack to  attempt to deal with comments which appear as
+			#This is a hack to attempt to deal with comments which appear as
 			#JavaStr objects within statements - something real strings can't 
 			#be (for valid code)
 			if isinstance(self.list[i], JavaStr):
