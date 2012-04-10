@@ -117,6 +117,9 @@ class StringEmitter():
 	def class_start(self, name):
 		pass	
 
+	def class_end(self):
+		pass
+
 	def clear(self):
 		self.lines = [] 
 
@@ -126,18 +129,29 @@ class StringEmitter():
 class OutputEmitter(StringEmitter):
 	def __init__(self, path):
 		StringEmitter.__init__(self)
-		self.output = open(path + "/Default.java", "w")
 		self.path = path
+		self.class_name = "Default"
+		self.code_ext = ".java"
+
+		self.output = open(self.path + "/" + self.class_name + self.code_ext, "w")
 
 	def class_start(self, name):
+		self.class_name = name
+		self.output_finish()
+		self.output = open(self.path + "/" + self.class_name + self.code_ext, "w")
 		print "Start class %s" % name
+
+	def class_end(self):
 		print self.as_string()
+		self.output_finish()
+		self.clear()
+		print "End class %s" % self.class_name
+		self.class_name = "Default"
+		self.output = open(self.path + "/" + self.class_name + self.code_ext, "w")
+
+	def output_finish(self):
 		self.output.write(self.as_string())
 		self.output.close()
-		self.clear()
-		self.output = open(self.path + "/" + name + ".java", "w")
 
 	def finish(self):
-		self.output.write(self.as_string())
-		self.output.close()
-
+		self.output_finish()

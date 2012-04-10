@@ -39,6 +39,7 @@ class JavaClass():
 		self.functions.emit(e)
 		
 		e.emit_line("}")
+		e.class_end()
 		return True
 
 
