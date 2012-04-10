@@ -278,8 +278,10 @@ class JavaVariable():
 		if self.type_name:
 			e.emit(self.type_name)
 			e.emit(" ")
-		if self.name == 'True' or self.name == 'False':
-			e.emit(self.name.lower())
+		if self.name == 'True':
+			e.emit("true")
+		elif self.name == 'False':
+			e.emit("false")
 		elif self.name == 'self':
 			e.emit("this")
 		elif self.name == 'None':
@@ -390,14 +392,14 @@ class JavaStatements():
 			#JavaStr objects within statements - something real strings can't 
 			#be (for valid code)
 			if isinstance(self.list[i], JavaStr):
-				newline =self.list[i].emit_comment(e)
+				newline = self.list[i].emit_comment(e)
 				#Only output a newline after statement if object didn't itself
 				if not newline:
 					e.emit_new_line()
 			else:
 				if isinstance(self.list[i], JavaClass):
 					e.class_start(self.list[i].name)
-			
+
 				newline = self.list[i].emit(e)
 				#Only output a newline after statement if object didn't itself
 				if not newline:
