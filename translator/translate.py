@@ -25,7 +25,7 @@ import sys
 
 from parser import *
 
-TRACE_FILENAME='.trace'
+TRACE_FILE_EXT='.trace'
 
 
 def translate_files(input_filename):
@@ -33,7 +33,7 @@ def translate_files(input_filename):
 	pathname = os.getcwd() + "/" + input_filename
 
 	#load argument trace file
-	args = ArgTrace.load_trace_file(input_filename + TRACE_FILENAME)
+	args = ArgTrace.load_trace_file(input_filename + TRACE_FILE_EXT)
 	
 	f = open(pathname)
 	code = f.read() 
