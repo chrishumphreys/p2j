@@ -57,18 +57,19 @@ class Parser():
 		in_comment = False
 
 		for l in range(0,len(lines)):
-			num_quotes = len(lines[l].split("\"\"\""))
+			this_line = lines[l]
+			num_quotes = len(this_line.split("\"\"\""))
 			if num_quotes % 2 == 0:
 				# odd number of quotes - therefore toggle in/out of comment
 				in_comment = not in_comment
 
 			if not in_comment:
 				#This is a crude hack to avoid "#123456" hex strings
-				skip = lines[l].find("\"#") > -1 or lines[l].find("'#") > -1
+				skip = this_line.find("\"#") > -1 or this_line.find("'#") > -1
 				if not skip:
-					parts = lines[l].split("#")
+					parts = this_line.split("#")
 					if len(parts) > 1:
-						m = self.comment_regex.match(lines[l])
+						m = self.comment_regex.match(this_line)
 						if m:
 							if m.group(1):
 								white_space = m.group(1)
