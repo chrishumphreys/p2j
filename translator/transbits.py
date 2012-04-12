@@ -603,7 +603,7 @@ class JavaSubscript(JavaBase):
 		return True
 
 
-class JavaSlice():
+class JavaSlice(JavaBase):
 	def __init__(self, lower, upper, step):
 		self.upper = upper
 		self.lower = lower
@@ -640,11 +640,11 @@ class JavaFor(JavaBase):
 		self.body.emit(e)
 		e.emit("}")
 
-class JavaPass():
+class JavaPass(JavaBase):
 	def emit(self,e):
-		pass
+		if super.emit_comment(e): e.emit_new_line()
 
-class JavaPrint():
+class JavaPrint(JavaBase):
 	def __init__(self, values):
 		self.values = values
 
