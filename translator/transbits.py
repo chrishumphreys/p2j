@@ -674,7 +674,7 @@ class JavaTryExcept():
 		self.handlers = handlers
 
 	def emit(self,e):
-		e.emit("try{")
+		e.emit("try {")
 		self.body.emit(e)
 		e.emit("}")
 		self.handlers.emit(e)
@@ -687,7 +687,7 @@ class JavaTryFinally():
 		self.finalbody = finalbody
 
 	def emit(self,e):
-		e.emit("try{")
+		e.emit("try {")
 		self.body.emit(e)
 		e.emit("} finally {")
 		self.finalbody.emit(e)
