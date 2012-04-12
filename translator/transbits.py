@@ -19,7 +19,21 @@
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
  """
 
-class JavaClass():
+class JavaBase():
+	def __init__(self):
+		self.comment = None
+		self.line_num = 0
+		self.emit_line_numbers = True
+
+	def emit_comment(self, e):
+		if self.comment is not None:
+			e.emit(" # " + self.comment)
+		if self.emit_line_numbers:
+			e.emit(" # ""Line " + str(self.line_num))
+		e.emit_new_line()
+
+
+class JavaClass(JavaBase):
 
 	def __init__(self, name, supers, body):
 		self.name = name
@@ -43,7 +57,7 @@ class JavaClass():
 		return True
 
 
-class JavaFunction():
+class JavaFunction(JavaBase):
 
 	def __init__(self, name, args, body):
 		self.name = name
@@ -74,7 +88,7 @@ class JavaFunction():
 	def is_constructor(self):
 		return self.name == '__init__'
 
-class JavaAssign():
+class JavaAssign(JavaBase):
 
 	def __init__(self, target, value):
 		self.target = target
@@ -100,7 +114,7 @@ class JavaAssign():
 	def default_swallow_assign(self):
 		return False
 
-class JavaAugAssign():
+class JavaAugAssign(JavaBase):
 
 	def __init__(self, target, value, op):
 		self.target = target
@@ -117,7 +131,7 @@ class JavaAugAssign():
 		return True
 
 
-class JavaBinOp():
+class JavaBinOp(JavaBase):
 
 	def __init__(self, left, right, op):
 		self.left = left
@@ -153,7 +167,7 @@ class JavaBoolOp(JavaBinOp):
 		return False
 
 
-class JavaValueList():
+class JavaValueList(JavaBase):
 	def __init__(self, contents):
 		self.contents = contents
 
@@ -171,7 +185,7 @@ class JavaValueList():
 		return False
 
 
-class JavaBinaryOperator():
+class JavaBinaryOperator(JavaBase):
 	def __init__(self, op):
 		self.op = op
 
@@ -267,7 +281,7 @@ class JavaDiv(JavaBinaryOperator):
 		JavaBinaryOperator.__init__(self, "/")
 
 
-class JavaVariable():
+class JavaVariable(JavaBase):
 
 	def __init__(self, name, context):
 		self.name = name
@@ -296,7 +310,7 @@ class JavaVariable():
 	def set_type(self, typename):
 		self.type_name = typename	
 
-class JavaNum():
+class JavaNum(JavaBase):
 	def __init__(self, val):
 		self.value = val
 
@@ -304,7 +318,7 @@ class JavaNum():
 		e.emit(self.value)
 		return False
 
-class JavaStr():
+class JavaStr(JavaBase):
 	def __init__(self, val):
 		self.value = val
 
@@ -324,7 +338,7 @@ class JavaStr():
 			e.emit(self.value)
 		return False
 
-class JavaList():
+class JavaList(JavaBase):
 	def __init__(self):
 		self.list = []
 
@@ -378,7 +392,7 @@ class JavaArgsList(JavaList):
 		return True
 
 
-class JavaStatements():
+class JavaStatements(JavaBase):
 	def __init__(self):
 		self.list = []
 
@@ -411,7 +425,7 @@ class JavaStatements():
 			if isinstance(self.list[i], JavaFunction):
 				self.list[i].set_class(parent)
 		
-class JavaIf():
+class JavaIf(JavaBase):
 	def __init__(self, test, body, orelse):
 		self.test = test
 		self.body = body
@@ -430,7 +444,7 @@ class JavaIf():
 			e.emit_line("}")
 		return True
 
-class JavaCall():
+class JavaCall(JavaBase):
 	def __init__(self, name, args):
 		self.name = name
 		self.args = args
@@ -442,7 +456,7 @@ class JavaCall():
 		e.emit(")")
 		return False
 
-class JavaCompare():
+class JavaCompare(JavaBase):
 	def __init__(self, left, ops, comparators):
 		self.left = left
 		self.ops = ops
@@ -510,7 +524,7 @@ class JavaEq(JavaBinaryOperator):
 			comparators.emit(e)
 			e.emit(")")
 
-class JavaNotIn():
+class JavaNotIn(JavaBase):
 
 	def emit(self, e, comparators, left):
 		e.emit("!")
@@ -522,7 +536,7 @@ class JavaNotIn():
 	def swallows_arguments(self):
 		return True
 
-class JavaIn():
+class JavaIn(JavaBase):
 
 	def emit(self, e, comparators, left):
 		comparators.emit(e)
@@ -535,7 +549,7 @@ class JavaIn():
 
 
 
-class JavaAttribute():
+class JavaAttribute(JavaBase):
 	def __init__(self, value, attr):
 		self.value = value
 		self.attr = attr
@@ -545,7 +559,7 @@ class JavaAttribute():
 		e.emit(self.attr)
 		return False		
 
-class JavaReturn():
+class JavaReturn(JavaBase):
 	def __init__(self, value):
 		self.value = value
 
@@ -557,7 +571,7 @@ class JavaReturn():
 			e.emit("return")
 		return False
 
-class JavaSubscript():
+class JavaSubscript(JavaBase):
 	def __init__(self, value, jslice, store):
 		self.value = value
 		self.jslice = jslice
@@ -611,7 +625,7 @@ class JavaSlice():
 		return False
 
 
-class JavaFor():
+class JavaFor(JavaBase):
 	def __init__(self, target, iterator, body):
 		self.target = target
 		self.iterator = iterator
@@ -667,7 +681,7 @@ class JavaUnaryOp(JavaBinOp):
 		self.operand.emit(e)
 		return False
 
-class JavaTryExcept():
+class JavaTryExcept(JavaBase):
 
 	def __init__(self, body, handlers):
 		self.body = body
@@ -680,7 +694,7 @@ class JavaTryExcept():
 		self.handlers.emit(e)
 		return False
 
-class JavaTryFinally():
+class JavaTryFinally(JavaBase):
 
 	def __init__(self, body, finalbody):
 		self.body = body
@@ -695,7 +709,7 @@ class JavaTryFinally():
 		return False
 
 
-class JavaExceptHandler():
+class JavaExceptHandler(JavaBase):
 	def __init__(self, name, body):
 		self.name = name
 		self.body = body
@@ -708,7 +722,7 @@ class JavaExceptHandler():
 		e.emit("}")
 		return False
 
-class JavaWhile():
+class JavaWhile(JavaBase):
 
 	def __init__(self, test, body):
 		self.body = body

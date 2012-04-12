@@ -51,10 +51,11 @@ class ActiveStack():
 
 class MyVisitor(ast.NodeVisitor):
 	
-	def __init__(self, arg_trace, python_filename):
+	def __init__(self, arg_trace, python_filename, line_comments):
 		self.active = ActiveStack()
 		self.arg_trace = arg_trace
 		self.python_filename = python_filename
+		self.line_comments = line_comments
 
 	def visit_Str(self, node):
 		if DEBUG: print "Found string %s" % node.s
