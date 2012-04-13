@@ -31,9 +31,7 @@ class ArgTrace:
 		filename = parts[0]
 		line = parts[1]
 		method = parts[2]
-		#Can't use line info as pre-parser adjusts comment lines
-		#key = filename + ":" + line + ":" + method
-		key = filename + ":" + method
+		key = filename + ":" + line + ":" + method
 		self.args[key] = dict()
 
 		for a in range(3, len(parts)):
@@ -43,8 +41,7 @@ class ArgTrace:
 			self.args[key][name] = typ
 
 	def find_method_args(self, filename, line, method):
-		#key = filename + ":" + str(line) + ":" + method
-		key = filename + ":" + method
+		key = filename + ":" + str(line) + ":" + method
 		if key in self.args:
 			print "DEBUG: %s found" % key
 			return self.args[key]
