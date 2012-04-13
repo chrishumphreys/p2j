@@ -32,7 +32,9 @@ class Parser():
 	def __init__(self, arg_trace, python_filename):
 		self.arg_trace = arg_trace
 		self.python_filename = python_filename
-		self.comment_regex = re.compile('(\s*)(?:(\S.*))?#(.*)')
+		self.comment_regex = re.compile('(\s*)(?:([^#].*))?#+(.*)')
+		self.line_comments = dict()
+
 
 	def parse_to_string(self, code):
 		e = StringEmitter()
@@ -48,12 +50,14 @@ class Parser():
 		self.output.close()
 
 		node = ast.parse(code)
-		v = MyVisitor(self.arg_trace, self.python_filename)
+		v = MyVisitor(self.arg_trace, self.python_filename, self.get_line_comments())
 		v.visit(node)
 
 		java = v.finish()
 		java.emit(e)
 
+	def get_line_comments(self):
+		return self.line_comments
 
 
 	def preprocess_comments(self, code):
@@ -70,6 +74,7 @@ class Parser():
 
 			if not in_comment:
 				#This is a crude hack to avoid "#123456" hex strings
+				#CHANGEME: Rewrite this to correctly detect whether a # is within quotes or not and then pick the first one that isn't
 				skip = this_line.find("\"#") > -1 or this_line.find("'#") > -1
 				if not skip:
 					parts = this_line.split("#")
@@ -80,12 +85,20 @@ class Parser():
 								white_space = m.group(1)
 							else:
 								white_space = ''
+
 							if m.group(2):
 								code = m.group(2)
 							else:
 								code = ''
+
 							comment = m.group(3)
-							newline = white_space + code + "\n" + white_space + "\"\"\" " + comment + " \"\"\""
+
+							if code is "":
+								newline = white_space + "\"\"\" " + comment + " \"\"\""
+							else:
+								self.line_comments[l] = comment
+								newline = white_space + code# + "\n" + white_space + "\"\"\" " + comment + " \"\"\""
+
 							lines[l] = newline
 				
 		code = "\n".join(lines)

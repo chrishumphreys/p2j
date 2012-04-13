@@ -90,6 +90,7 @@ class MyVisitor(ast.NodeVisitor):
 		args = JavaList()
 		self.fill(args, base_end-start)
 		java_class = JavaClass(node.name, args, body)
+		java_class.line_num = node.lineno
 		self.active.push(java_class)
 		if DEBUG: print "-----------end node   %s -----------" % node.__class__.__name__
 

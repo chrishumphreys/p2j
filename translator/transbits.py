@@ -26,16 +26,28 @@ class JavaBase():
 		self.emit_line_numbers = True
 
 	def emit_comment(self, e):
+		comment_emitted = False
+
 		if self.comment is not None:
-			e.emit(" # " + self.comment)
+			e.emit(" //" + self.comment)
+			comment_emitted = True
+
 		if self.emit_line_numbers:
-			e.emit(" # ""Line " + str(self.line_num))
+			e.emit(" //"" Line " + str(self.line_num))
+			comment_emitted = True
+
+		return comment_emitted
+
+	def emit_comment_and_new_line(self, e):
+		comment_emitted = self.emit_comment(e)
 		e.emit_new_line()
+		return comment_emitted
 
 
 class JavaClass(JavaBase):
 
 	def __init__(self, name, supers, body):
+		JavaBase.__init__(self)
 		self.name = name
 		self.supers = supers
 		self.functions = body
@@ -49,7 +61,8 @@ class JavaClass(JavaBase):
 			e.emit(" extends ")
 			self.supers.emit(e)
 		
-		e.emit_line(" {")
+		e.emit(" {")
+		self.emit_comment_and_new_line(e)
 		self.functions.emit(e)
 		
 		e.emit_line("}")
