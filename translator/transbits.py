@@ -43,6 +43,13 @@ class JavaBase():
 		e.emit_new_line()
 		return comment_emitted
 
+	def set_metadata(self, node, line_comments):
+		lineno = node.lineno
+		self.line_num = lineno
+		if lineno in line_comments:
+			self.comment = line_comments[lineno]
+			del line_comments[lineno]
+
 
 class JavaClass(JavaBase):
 
