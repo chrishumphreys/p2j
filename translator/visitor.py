@@ -58,8 +58,8 @@ class MyVisitor(ast.NodeVisitor):
 
 	def visit_Str(self, node):
 		if DEBUG: print "Found string %s" % node.s
-		java_var = JavaStr(node.s)
-		self.active.push(java_var)
+		java_str = JavaStr(node.s)
+		self.active.push(java_str)
 
 	def visit_Module(self, node):
 		return ast.NodeVisitor.generic_visit(self, node)
@@ -88,8 +88,8 @@ class MyVisitor(ast.NodeVisitor):
 		self.fill(body, end-base_end)
 		args = JavaList()
 		self.fill(args, base_end-start)
-		java_func = JavaClass(node.name, args, body)
-		self.active.push(java_func)
+		java_class = JavaClass(node.name, args, body)
+		self.active.push(java_class)
 		if DEBUG: print "-----------end node   %s -----------" % node.__class__.__name__
 
 
@@ -394,7 +394,8 @@ class MyVisitor(ast.NodeVisitor):
 			orelse = JavaStatements()
 			self.fill(orelse, end-start)
 
-		java_if = JavaIf(test,body, orelse)
+		java_if = JavaIf(test, body, orelse)
+		java_if.set_metadata(node, self.line_comments)
 		self.active.push(java_if)
 		if DEBUG: print "-----------end node   %s -----------" % node.__class__.__name__
 
