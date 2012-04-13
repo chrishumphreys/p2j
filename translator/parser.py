@@ -69,7 +69,7 @@ class Parser():
 
 
 	def preprocess_comments(self, code):
-		# The parser strips comments delimited with hash so replace with quotes (unless within comment already)
+		# The parser strips comments delimited with hash so we surround them with quotes (unless within comment already)
 		lines = code.split('\n')
 		in_comment = False
 
