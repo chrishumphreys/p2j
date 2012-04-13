@@ -22,6 +22,7 @@
 import ast
 import os
 import re
+import pprint
 
 from visitor import *
 from args import *
@@ -55,6 +56,9 @@ class Parser():
 
 		java = v.finish()
 		java.emit(e)
+
+		pp = pprint.PrettyPrinter(indent=4)
+		pp.pprint(self.get_line_comments())
 
 	def get_line_comments(self):
 		return self.line_comments
