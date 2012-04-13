@@ -96,7 +96,7 @@ class Parser():
 							if code is "":
 								newline = white_space + "\"\"\" " + comment + " \"\"\""
 							else:
-								self.line_comments[l] = comment
+								self.line_comments[l+1] = comment
 								newline = white_space + code# + "\n" + white_space + "\"\"\" " + comment + " \"\"\""
 
 							lines[l] = newline
