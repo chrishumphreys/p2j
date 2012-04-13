@@ -46,9 +46,11 @@ class Parser():
 	def parse(self, code, e):
 		code = self.preprocess_comments(code)
 
+		'''
 		self.output = open("dump.py", "w")
 		self.output.write(code)
 		self.output.close()
+		'''
 
 		node = ast.parse(code)
 		v = MyVisitor(self.arg_trace, self.python_filename, self.get_line_comments())
@@ -57,8 +59,10 @@ class Parser():
 		java = v.finish()
 		java.emit(e)
 
+		'''
 		pp = pprint.PrettyPrinter(indent=4)
 		pp.pprint(self.get_line_comments())
+		'''
 
 	def get_line_comments(self):
 		return self.line_comments
