@@ -60,6 +60,7 @@ class MyVisitor(ast.NodeVisitor):
 	def visit_Str(self, node):
 		if DEBUG: print "Found string %s" % node.s
 		java_str = JavaStr(node.s)
+		java_str.set_metadata(node, self.line_comments)
 		self.active.push(java_str)
 
 	def visit_Module(self, node):
@@ -147,7 +148,6 @@ class MyVisitor(ast.NodeVisitor):
 		end = self.active.size()
 		arg_list = JavaList()
 		self.fill(arg_list, end-start)
-		arg_list.set_metadata(node, self.line_comments)
 		self.active.push(arg_list)
 
 		if DEBUG: print "-----------end node   %s -----------" % node.__class__.__name__
@@ -274,7 +274,8 @@ class MyVisitor(ast.NodeVisitor):
 	def fill(self, obj, amt):
 		reverse = deque()
 		for i in range(0, amt):
-			reverse.append(self.active.pop())
+			java = self.active.pop()
+			reverse.append(java)
 		while len(reverse)>0:
 			obj.add(reverse.pop())
 
@@ -448,7 +449,9 @@ class MyVisitor(ast.NodeVisitor):
 			value = self.active.pop()
 		else:
 			value = None
-		self.active.push(JavaReturn(value))
+		obj = JavaReturn(value)
+		obj.set_metadata(node, self.line_comments)
+		self.active.push(obj)
 
 	def visit_Subscript(self, node):
 		self.iter_field(node.value)
@@ -456,7 +459,9 @@ class MyVisitor(ast.NodeVisitor):
 		self.iter_field(node.slice)
 		jslice = self.active.pop()
 		store = isinstance(node.ctx, ast.Store)
-		self.active.push(JavaSubscript(value, jslice, store))
+		obj = JavaSubscript(value, jslice, store)
+		obj.set_metadata(node, self.line_comments)
+		self.active.push(obj)
 
 	def visit_Pass(self, node):
 		self.active.push(JavaPass())
@@ -464,7 +469,9 @@ class MyVisitor(ast.NodeVisitor):
 	def visit_Print(self, node):
 		self.iter_field(node.values)
 		values = self.active.pop()
-		self.active.push(JavaPrint(values))
+		obj = JavaPrint(values)
+		obj.set_metadata(node, self.line_comments)
+		self.active.push(obj)
 
 	def visit_Slice(self, node):
 		if DEBUG: 
@@ -501,7 +508,9 @@ class MyVisitor(ast.NodeVisitor):
 		body = JavaStatements()
 		self.fill(body, end-start)
 
-		self.active.push(JavaFor(target, iterator, body))
+		obj = JavaFor(target, iterator, body)
+		obj.set_metadata(node, self.line_comments)
+		self.active.push(obj)
 
 	def finish(self):
 		body = JavaStatements()
@@ -559,7 +568,9 @@ class MyVisitor(ast.NodeVisitor):
 		end = self.active.size()
 		handlers = JavaStatements()
 		self.fill(handlers, end-start)
-		self.active.push(JavaTryExcept(body, handlers))
+		obj = JavaTryExcept(body, handlers)
+		obj.set_metadata(node, self.line_comments)
+		self.active.push(obj)
 
 	def visit_TryFinally(self, node):
 
@@ -574,7 +585,9 @@ class MyVisitor(ast.NodeVisitor):
 		end = self.active.size()
 		handlers = JavaStatements()
 		self.fill(handlers, end-start)
-		self.active.push(JavaTryFinally(body, handlers))
+		obj = JavaTryFinally(body, handlers)
+		obj.set_metadata(node, self.line_comments)
+		self.active.push(obj)
 
 
 	def visit_ExceptHandler(self, node):
@@ -585,7 +598,9 @@ class MyVisitor(ast.NodeVisitor):
 		end = self.active.size()
 		body = JavaStatements()
 		self.fill(body, end-start)
-		self.active.push(JavaExceptHandler(name, body))
+		obj = JavaExceptHandler(name, body)
+		obj.set_metadata(node, self.line_comments)
+		self.active.push(obj)
 
 	def visit_While(self,node):
 		self.iter_field(node.test)
@@ -595,7 +610,9 @@ class MyVisitor(ast.NodeVisitor):
 		end = self.active.size()
 		body = JavaStatements()
 		self.fill(body, end-start)
-		self.active.push(JavaWhile(test, body))
+		obj = JavaWhile(test, body)
+		obj.set_metadata(node, self.line_comments)
+		self.active.push(obj)
 
 	def visit_Break(self, node):
 		self.active.push(JavaBreak())
