@@ -43,6 +43,12 @@ class JavaBase():
 		e.emit_new_line()
 		return comment_emitted
 
+	def emit_line_with_comment(self, e, fragment):
+		e.emit(fragment)
+		comment_emitted = self.emit_comment(e)
+		e.emit_new_line()
+		return comment_emitted
+
 	def set_metadata(self, node, line_comments):
 		lineno = node.lineno
 		self.line_num = lineno
@@ -67,9 +73,8 @@ class JavaClass(JavaBase):
 		if self.supers and len(self.supers) > 0:
 			e.emit(" extends ")
 			self.supers.emit(e)
-		
-		e.emit(" {")
-		self.emit_comment_and_new_line(e)
+
+		self.emit_line_with_comment(e, " {")
 		self.functions.emit(e)
 		
 		e.emit_line("}")
@@ -98,7 +103,7 @@ class JavaFunction(JavaBase):
 			e.emit(self.name)
 		e.emit("(")
 		self.args.emit(e, True)
-		e.emit_line("){")
+		self.emit_line_with_comment(e, ") {")
 		self.body.emit(e)
 		e.emit_line("}")
 		return True
@@ -130,7 +135,8 @@ class JavaAssign(JavaBase):
 			e.emit(" = ")
 			self.value.emit(e)
 
-		e.emit_line(";")
+		self.emit_line_with_comment(e, ";")
+
 		return True
 
 	def default_swallow_assign(self):
@@ -150,7 +156,7 @@ class JavaAugAssign(JavaBase):
 		self.op.emit(e)
 		e.emit("= ")
 		self.value.emit(e)
-		e.emit_line(";")
+		self.emit_line_with_comment(e, ";")
 		return True
 
 
@@ -203,7 +209,7 @@ class JavaValueList(JavaBase):
 			for c in range(0, length):
 				self.contents.list[c].emit(e)
 				if c < length-1:
-					e.emit(",")
+					e.emit(", ")
 			e.emit("})")
 		else:
 			e.emit("new ArrayList()")
@@ -295,7 +301,7 @@ class JavaMod(JavaBinaryOperator):
 	def emit_with_args(self, left, right, e):
 		e.emit("String.format(")
 		left.emit(e)
-		e.emit(",")
+		e.emit(", ")
 		right.emit(e)
 		e.emit(")")
 
@@ -383,7 +389,7 @@ class JavaList(JavaBase):
 			if not (skip_self and self._item_is_self(i)):
 				self.list[i].emit(e)
 				if i < len(self.list)-1:
-					e.emit(",")
+					e.emit(", ")
 		if self._parenthesis():
 			e.emit(")")
 		return False
@@ -448,8 +454,7 @@ class JavaStatements(JavaBase):
 				newline = self.list[i].emit(e)
 				#Only output a newline after statement if object didn't itself
 				if not newline:
-					e.emit(";")
-					e.emit_new_line()
+					self.emit_line_with_comment(e, ";")
 
 	def set_parent(self, parent):
 		for i in range(0, len(self.list)):
@@ -466,10 +471,11 @@ class JavaIf(JavaBase):
 	def emit(self,e):
 		e.emit("if (")
 		self.test.emit(e)
-		e.emit_line(") {")
+		self.emit_line_with_comment(e, ") {")
 		self.body.emit(e)
 		if self.orelse:
 			e.emit_line("} else {")
+			# CHANGEME: We are currently missing comments for else: lines
 			self.orelse.emit(e)
 			e.emit_line("}")
 		else:
@@ -631,7 +637,7 @@ class JavaSubscript(JavaBase):
 		self.value.emit(e)
 		e.emit(".put(")
 		self.jslice.emit(e)
-		e.emit(",")
+		e.emit(", ")
 		value.emit(e)
 		e.emit(")")
 		return False
@@ -652,7 +658,7 @@ class JavaSlice(JavaBase):
 		if self.upper:
 			e.emit(".subSequence(")
 			self.lower.emit(e)
-			e.emit(",")
+			e.emit(", ")
 			self.upper.emit(e)
 		else:
 			e.emit(".substring(")
@@ -675,7 +681,7 @@ class JavaFor(JavaBase):
 		self.target.emit(e)
 		e.emit(":")
 		self.iterator.emit(e)
-		e.emit("){")
+		self.emit_line_with_comment(e, ") {")
 		self.body.emit(e)
 		e.emit("}")
 
@@ -729,7 +735,7 @@ class JavaTryExcept(JavaBase):
 		self.handlers = handlers
 
 	def emit(self,e):
-		e.emit("try {")
+		self.emit_line_with_comment(e, "try {")
 		self.body.emit(e)
 		e.emit("}")
 		self.handlers.emit(e)
@@ -743,9 +749,9 @@ class JavaTryFinally(JavaBase):
 		self.finalbody = finalbody
 
 	def emit(self,e):
-		e.emit("try {")
+		self.emit_line_with_comment(e, "try {")
 		self.body.emit(e)
-		e.emit("} finally {")
+		e.emit_line("} finally {")
 		self.finalbody.emit(e)
 		e.emit("}")
 		return False
@@ -760,7 +766,7 @@ class JavaExceptHandler(JavaBase):
 	def emit(self,e):
 		e.emit("catch (")
 		self.name.emit(e)
-		e.emit("){")
+		self.emit_line_with_comment(e, ") {")
 		self.body.emit(e)
 		e.emit("}")
 		return False
@@ -775,7 +781,7 @@ class JavaWhile(JavaBase):
 	def emit(self,e):
 		e.emit("while ")
 		self.test.emit(e)
-		e.emit("{")
+		self.emit_line_with_comment(e, "{")
 		self.body.emit(e)
 		e.emit("}")
 		return False
