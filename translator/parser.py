@@ -42,6 +42,11 @@ class Parser():
 
 	def parse(self, code, e):
 		code = self.preprocess_comments(code)
+
+		self.output = open("dump.py", "w")
+		self.output.write(code)
+		self.output.close()
+
 		node = ast.parse(code)
 		v = MyVisitor(self.arg_trace, self.python_filename)
 		v.visit(node)
