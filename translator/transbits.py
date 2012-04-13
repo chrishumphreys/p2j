@@ -32,7 +32,7 @@ class JavaBase():
 			e.emit(" //" + self.comment)
 			comment_emitted = True
 
-		if self.emit_line_numbers:
+		if self.emit_line_numbers and self.line_num > 0:
 			e.emit(" //"" Line " + str(self.line_num))
 			comment_emitted = True
 
@@ -54,7 +54,7 @@ class JavaBase():
 		self.line_num = lineno
 		if lineno in line_comments:
 			self.comment = line_comments[lineno]
-			del line_comments[lineno]
+			#del line_comments[lineno]
 
 
 class JavaClass(JavaBase):
@@ -454,7 +454,12 @@ class JavaStatements(JavaBase):
 				newline = self.list[i].emit(e)
 				#Only output a newline after statement if object didn't itself
 				if not newline:
-					self.emit_line_with_comment(e, ";")
+					e.emit(";")
+					if self.comment is None:
+						self.list[i].emit_comment(e)
+					else:
+						self.emit_comment(e)
+					e.emit_new_line()
 
 	def set_parent(self, parent):
 		for i in range(0, len(self.list)):
