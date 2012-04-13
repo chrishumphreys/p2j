@@ -80,6 +80,7 @@ class JavaClass(JavaBase):
 class JavaFunction(JavaBase):
 
 	def __init__(self, name, args, body):
+		JavaBase.__init__(self)
 		self.name = name
 		self.args = args
 		self.body = body
@@ -111,6 +112,7 @@ class JavaFunction(JavaBase):
 class JavaAssign(JavaBase):
 
 	def __init__(self, target, value):
+		JavaBase.__init__(self)
 		self.target = target
 		self.value = value
 
@@ -137,6 +139,7 @@ class JavaAssign(JavaBase):
 class JavaAugAssign(JavaBase):
 
 	def __init__(self, target, value, op):
+		JavaBase.__init__(self)
 		self.target = target
 		self.value = value
 		self.op = op
@@ -154,6 +157,7 @@ class JavaAugAssign(JavaBase):
 class JavaBinOp(JavaBase):
 
 	def __init__(self, left, right, op):
+		JavaBase.__init__(self)
 		self.left = left
 		self.right = right
 		self.op = op
@@ -189,6 +193,7 @@ class JavaBoolOp(JavaBinOp):
 
 class JavaValueList(JavaBase):
 	def __init__(self, contents):
+		JavaBase.__init__(self)
 		self.contents = contents
 
 	def emit(self,e):
@@ -207,6 +212,7 @@ class JavaValueList(JavaBase):
 
 class JavaBinaryOperator(JavaBase):
 	def __init__(self, op):
+		JavaBase.__init__(self)
 		self.op = op
 
 	def emit(self,e):
@@ -304,6 +310,7 @@ class JavaDiv(JavaBinaryOperator):
 class JavaVariable(JavaBase):
 
 	def __init__(self, name, context):
+		JavaBase.__init__(self)
 		self.name = name
 		self.context = context
 		self.type_name = None
@@ -332,6 +339,7 @@ class JavaVariable(JavaBase):
 
 class JavaNum(JavaBase):
 	def __init__(self, val):
+		JavaBase.__init__(self)
 		self.value = val
 
 	def emit(self, e):
@@ -340,6 +348,7 @@ class JavaNum(JavaBase):
 
 class JavaStr(JavaBase):
 	def __init__(self, val):
+		JavaBase.__init__(self)
 		self.value = val
 
 	def emit(self, e):
@@ -360,6 +369,7 @@ class JavaStr(JavaBase):
 
 class JavaList(JavaBase):
 	def __init__(self):
+		JavaBase.__init__(self)
 		self.list = []
 
 	def add(self, obj):
@@ -414,6 +424,7 @@ class JavaArgsList(JavaList):
 
 class JavaStatements(JavaBase):
 	def __init__(self):
+		JavaBase.__init__(self)
 		self.list = []
 
 	def add(self, obj):
@@ -447,6 +458,7 @@ class JavaStatements(JavaBase):
 		
 class JavaIf(JavaBase):
 	def __init__(self, test, body, orelse):
+		JavaBase.__init__(self)
 		self.test = test
 		self.body = body
 		self.orelse = orelse
@@ -466,6 +478,7 @@ class JavaIf(JavaBase):
 
 class JavaCall(JavaBase):
 	def __init__(self, name, args):
+		JavaBase.__init__(self)
 		self.name = name
 		self.args = args
 
@@ -478,6 +491,7 @@ class JavaCall(JavaBase):
 
 class JavaCompare(JavaBase):
 	def __init__(self, left, ops, comparators):
+		JavaBase.__init__(self)
 		self.left = left
 		self.ops = ops
 		self.comparators = comparators
@@ -571,6 +585,7 @@ class JavaIn(JavaBase):
 
 class JavaAttribute(JavaBase):
 	def __init__(self, value, attr):
+		JavaBase.__init__(self)
 		self.value = value
 		self.attr = attr
 	def emit(self, e):
@@ -581,6 +596,7 @@ class JavaAttribute(JavaBase):
 
 class JavaReturn(JavaBase):
 	def __init__(self, value):
+		JavaBase.__init__(self)
 		self.value = value
 
 	def emit(self, e):
@@ -593,6 +609,7 @@ class JavaReturn(JavaBase):
 
 class JavaSubscript(JavaBase):
 	def __init__(self, value, jslice, store):
+		JavaBase.__init__(self)
 		self.value = value
 		self.jslice = jslice
 		self.store = store
@@ -625,6 +642,7 @@ class JavaSubscript(JavaBase):
 
 class JavaSlice(JavaBase):
 	def __init__(self, lower, upper, step):
+		JavaBase.__init__(self)
 		self.upper = upper
 		self.lower = lower
 		self.step = step
@@ -647,6 +665,7 @@ class JavaSlice(JavaBase):
 
 class JavaFor(JavaBase):
 	def __init__(self, target, iterator, body):
+		JavaBase.__init__(self)
 		self.target = target
 		self.iterator = iterator
 		self.body = body
@@ -666,6 +685,7 @@ class JavaPass(JavaBase):
 
 class JavaPrint(JavaBase):
 	def __init__(self, values):
+		JavaBase.__init__(self)
 		self.values = values
 
 	def emit(self,e):
@@ -704,6 +724,7 @@ class JavaUnaryOp(JavaBinOp):
 class JavaTryExcept(JavaBase):
 
 	def __init__(self, body, handlers):
+		JavaBase.__init__(self)
 		self.body = body
 		self.handlers = handlers
 
@@ -717,6 +738,7 @@ class JavaTryExcept(JavaBase):
 class JavaTryFinally(JavaBase):
 
 	def __init__(self, body, finalbody):
+		JavaBase.__init__(self)
 		self.body = body
 		self.finalbody = finalbody
 
@@ -731,6 +753,7 @@ class JavaTryFinally(JavaBase):
 
 class JavaExceptHandler(JavaBase):
 	def __init__(self, name, body):
+		JavaBase.__init__(self)
 		self.name = name
 		self.body = body
 
@@ -745,6 +768,7 @@ class JavaExceptHandler(JavaBase):
 class JavaWhile(JavaBase):
 
 	def __init__(self, test, body):
+		JavaBase.__init__(self)
 		self.body = body
 		self.test = test
 
