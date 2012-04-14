@@ -692,7 +692,9 @@ class JavaFor(JavaBase):
 
 class JavaPass(JavaBase):
 	def emit(self,e):
-		if super.emit_comment(e): e.emit_new_line()
+		self.emit_base(e)
+		if self.emit_comment(e):
+			e.emit_new_line()
 
 class JavaPrint(JavaBase):
 	def __init__(self, values):
