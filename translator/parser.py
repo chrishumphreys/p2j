@@ -122,6 +122,7 @@ class StringEmitter():
 		self.code_line = ""
 		self.lines = []
 		self.line_comments = None
+		self.want_linebreak = False
 
 	def is_fresh_line(self):
 		return self.code_line is ""
@@ -137,13 +138,20 @@ class StringEmitter():
 				if self.source_line_num in self.line_comments:
 					# There is an increase in the source line number due to formatting
 					self.emit_new_line()
+				else:
+					self.want_linebreak = True
 
 			self.source_line_num = num
 
 	def set_line_comments(self, line_comments):
 		self.line_comments = line_comments
 
-	def emit(self, fragment) :
+	def emit(self, fragment):
+		if self.want_linebreak:
+			self.want_linebreak = False
+			if self.code_line is not "":
+				self.emit_new_line()
+
 		if isinstance(fragment, basestring):
 			if fragment.find("\n") is not -1:
 				fragment_lines = fragment.splitlines()
