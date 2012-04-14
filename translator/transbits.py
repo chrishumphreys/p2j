@@ -20,24 +20,27 @@
  """
 
 class JavaBase():
-	def __init__(self):
-		self.comment = None
-		self.line_num = 0
-		self.emit_line_numbers = False
+	def __init__(self, line_num=0, emit_line_numbers=False):
+		self.line_num = line_num
+		self.emit_line_numbers = emit_line_numbers
 
 	def emit_base(self, e):
 		e.set_source_line(self.line_num)
 	
 	def emit_comment(self, e):
+		self.emit_base(e)
+		self.emit_comment_without_base(e)
+
+	def emit_comment_without_base(self, e):
 		comment_emitted = False
 		is_fresh_line = e.is_fresh_line()
 
-		self.emit_base(e)
-			
-		if self.comment is not None:
+		line_comments = e.line_comments
+
+		if self.line_num > 0 and self.line_num in line_comments:
 			if not is_fresh_line: 
 				e.emit(" ")
-			e.emit("//" + self.comment)
+			e.emit_comment("//" + line_comments[self.line_num], self.line_num)
 			comment_emitted = True
 
 		if self.emit_line_numbers and self.line_num > 0:
@@ -47,6 +50,7 @@ class JavaBase():
 			comment_emitted = True
 
 		return comment_emitted
+
 
 	def emit_comment_and_new_line(self, e):
 		comment_emitted = self.emit_comment(e)
@@ -59,12 +63,9 @@ class JavaBase():
 		e.emit_new_line()
 		return comment_emitted
 
-	def set_metadata(self, node, line_comments):
+	def set_metadata(self, node):
 		lineno = node.lineno
 		self.line_num = lineno
-		if lineno in line_comments:
-			self.comment = line_comments[lineno]
-			#del line_comments[lineno]
 
 
 class JavaClass(JavaBase):
@@ -484,7 +485,7 @@ class JavaStatements(JavaBase):
 				#Only output a newline after statement if object didn't itself
 				if not newline:
 					e.emit(";")
-					if self.comment is None:
+					if self.line_num > 0:
 						self.list[i].emit_comment(e)
 					else:
 						self.emit_comment(e)

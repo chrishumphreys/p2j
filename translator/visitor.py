@@ -51,16 +51,15 @@ class ActiveStack():
 
 class MyVisitor(ast.NodeVisitor):
 	
-	def __init__(self, arg_trace, python_filename, line_comments):
+	def __init__(self, arg_trace, python_filename):
 		self.active = ActiveStack()
 		self.arg_trace = arg_trace
 		self.python_filename = python_filename
-		self.line_comments = line_comments
 
 	def visit_Str(self, node):
 		if DEBUG: print "Found string %s" % node.s
 		java_str = JavaStr(node.s)
-		java_str.set_metadata(node, self.line_comments)
+		java_str.set_metadata(node)
 		self.active.push(java_str)
 
 	def visit_Module(self, node):
@@ -91,7 +90,7 @@ class MyVisitor(ast.NodeVisitor):
 		args = JavaList()
 		self.fill(args, base_end-start)
 		java_class = JavaClass(node.name, args, body)
-		java_class.set_metadata(node, self.line_comments)
+		java_class.set_metadata(node)
 		self.active.push(java_class)
 		if DEBUG: print "-----------end node   %s -----------" % node.__class__.__name__
 
@@ -113,7 +112,7 @@ class MyVisitor(ast.NodeVisitor):
 		# identify argument types...
 		self.infer_arguments_types(node, args)
 		java_func = JavaFunction(node.name, args, body)
-		java_func.set_metadata(node, self.line_comments)
+		java_func.set_metadata(node)
 		self.active.push(java_func)
 		if DEBUG: print "-----------end node   %s -----------" % node.__class__.__name__
 
@@ -161,7 +160,7 @@ class MyVisitor(ast.NodeVisitor):
 		op = self.active.pop()
 		left = self.active.pop()
 		java_assign = JavaBinOp(left, right, op)
-		java_assign.set_metadata(node, self.line_comments)
+		java_assign.set_metadata(node)
 		self.active.push(java_assign)
 		if DEBUG: print "-----------end node   %s -----------" % node.__class__.__name__
 
@@ -211,7 +210,7 @@ class MyVisitor(ast.NodeVisitor):
 		value = self.active.pop()
 		target = self.active.pop()
 		java_assign = JavaAssign(target, value)
-		java_assign.set_metadata(node, self.line_comments)
+		java_assign.set_metadata(node)
 		self.active.push(java_assign)
 		if DEBUG: print "-----------end node   %s -----------" % node.__class__.__name__
 
@@ -224,7 +223,7 @@ class MyVisitor(ast.NodeVisitor):
 		op = self.active.pop()
 		target = self.active.pop()
 		java_assign = JavaAugAssign(target, value, op)
-		java_assign.set_metadata(node, self.line_comments)
+		java_assign.set_metadata(node)
 		self.active.push(java_assign)
 		if DEBUG: print "-----------end node   %s -----------" % node.__class__.__name__
 		
@@ -240,7 +239,7 @@ class MyVisitor(ast.NodeVisitor):
 		java_tuple = JavaTuple()
 		if DEBUG: print "popping %d from stack" % (end-start)
 		self.fill(java_tuple, end-start)
-		java_tuple.set_metadata(node, self.line_comments)
+		java_tuple.set_metadata(node)
 		self.active.push(java_tuple)
 		if DEBUG: print "-----------end node  %s -----------" % node.__class__.__name__
 
@@ -250,14 +249,14 @@ class MyVisitor(ast.NodeVisitor):
 			print "-----------start node  %s -----------" % node.__class__.__name__
 			print "%s = %s (%s)" % (node.__class__.__name__, node.id, node.ctx)
 		java_var = JavaVariable(node.id, str(node.ctx))
-		java_var.set_metadata(node, self.line_comments)
+		java_var.set_metadata(node)
 		self.active.push(java_var)
 		if DEBUG: print "-----------end node   %s -----------" % node.__class__.__name__
 
 	def visit_Num(self, node):
 		if DEBUG: print "-----------start node  %s -----------" % node.__class__.__name__
 		java_var = JavaNum(node.n)
-		java_var.set_metadata(node, self.line_comments)
+		java_var.set_metadata(node)
 		self.active.push(java_var)
 		if DEBUG: print "-----------end node   %s -----------" % node.__class__.__name__
 
@@ -266,7 +265,7 @@ class MyVisitor(ast.NodeVisitor):
 		self.iter_field(node.value)
 		val = self.active.pop()
 		att = JavaAttribute(val, node.attr)
-		att.set_metadata(node, self.line_comments)
+		att.set_metadata(node)
 		self.active.push(att)
 		if DEBUG: print "-----------end node   %s -----------" % node.__class__.__name__
 
@@ -298,7 +297,7 @@ class MyVisitor(ast.NodeVisitor):
 		self.iter_field(node.comparators)
 		comparators = self.active.pop()
 		comp = JavaCompare(left, ops, comparators)
-		comp.set_metadata(node, self.line_comments)
+		comp.set_metadata(node)
 		self.active.push(comp)
 		if DEBUG: print "-----------end node   %s -----------" % node.__class__.__name__
 
@@ -317,7 +316,7 @@ class MyVisitor(ast.NodeVisitor):
 		op = self.active.pop()
 
 		java_assign = JavaBoolOp(java_tuple, op)
-		java_assign.set_metadata(node, self.line_comments)
+		java_assign.set_metadata(node)
 		self.active.push(java_assign)
 
 	def visit_And(self, node):
@@ -381,7 +380,7 @@ class MyVisitor(ast.NodeVisitor):
 		arg_list = JavaList()
 		self.fill(arg_list, end-start)
 		java_call = JavaCall(func, arg_list)
-		java_call.set_metadata(node, self.line_comments)
+		java_call.set_metadata(node)
 		self.active.push(java_call)
 		if DEBUG: print "-----------end node   %s -----------" % node.__class__.__name__
 
@@ -410,7 +409,7 @@ class MyVisitor(ast.NodeVisitor):
 			self.fill(orelse, end-start)
 
 		java_if = JavaIf(test, body, orelse)
-		java_if.set_metadata(node, self.line_comments)
+		java_if.set_metadata(node)
 		self.active.push(java_if)
 		if DEBUG: print "-----------end node   %s -----------" % node.__class__.__name__
 
@@ -450,7 +449,7 @@ class MyVisitor(ast.NodeVisitor):
 		else:
 			value = None
 		obj = JavaReturn(value)
-		obj.set_metadata(node, self.line_comments)
+		obj.set_metadata(node)
 		self.active.push(obj)
 
 	def visit_Subscript(self, node):
@@ -460,7 +459,7 @@ class MyVisitor(ast.NodeVisitor):
 		jslice = self.active.pop()
 		store = isinstance(node.ctx, ast.Store)
 		obj = JavaSubscript(value, jslice, store)
-		obj.set_metadata(node, self.line_comments)
+		obj.set_metadata(node)
 		self.active.push(obj)
 
 	def visit_Pass(self, node):
@@ -470,7 +469,7 @@ class MyVisitor(ast.NodeVisitor):
 		self.iter_field(node.values)
 		values = self.active.pop()
 		obj = JavaPrint(values)
-		obj.set_metadata(node, self.line_comments)
+		obj.set_metadata(node)
 		self.active.push(obj)
 
 	def visit_Slice(self, node):
@@ -509,7 +508,7 @@ class MyVisitor(ast.NodeVisitor):
 		self.fill(body, end-start)
 
 		obj = JavaFor(target, iterator, body)
-		obj.set_metadata(node, self.line_comments)
+		obj.set_metadata(node)
 		self.active.push(obj)
 
 	def finish(self):
@@ -546,7 +545,7 @@ class MyVisitor(ast.NodeVisitor):
 		op = self.active.pop()
 
 		j = JavaUnaryOp(operand, op)
-		j.set_metadata(node, self.line_comments)
+		j.set_metadata(node)
 		self.active.push(j)
 
 	def visit_USub(self, node):
@@ -569,7 +568,7 @@ class MyVisitor(ast.NodeVisitor):
 		handlers = JavaStatements()
 		self.fill(handlers, end-start)
 		obj = JavaTryExcept(body, handlers)
-		obj.set_metadata(node, self.line_comments)
+		obj.set_metadata(node)
 		self.active.push(obj)
 
 	def visit_TryFinally(self, node):
@@ -586,7 +585,7 @@ class MyVisitor(ast.NodeVisitor):
 		handlers = JavaStatements()
 		self.fill(handlers, end-start)
 		obj = JavaTryFinally(body, handlers)
-		obj.set_metadata(node, self.line_comments)
+		obj.set_metadata(node)
 		self.active.push(obj)
 
 
@@ -599,7 +598,7 @@ class MyVisitor(ast.NodeVisitor):
 		body = JavaStatements()
 		self.fill(body, end-start)
 		obj = JavaExceptHandler(name, body)
-		obj.set_metadata(node, self.line_comments)
+		obj.set_metadata(node)
 		self.active.push(obj)
 
 	def visit_While(self,node):
@@ -611,7 +610,7 @@ class MyVisitor(ast.NodeVisitor):
 		body = JavaStatements()
 		self.fill(body, end-start)
 		obj = JavaWhile(test, body)
-		obj.set_metadata(node, self.line_comments)
+		obj.set_metadata(node)
 		self.active.push(obj)
 
 	def visit_Break(self, node):

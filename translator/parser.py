@@ -45,6 +45,7 @@ class Parser():
 
 	def parse(self, code, e):
 		code = self.preprocess_comments(code)
+		e.set_line_comments(self.line_comments)
 
 		'''
 		self.output = open("dump.py", "w")
@@ -53,16 +54,14 @@ class Parser():
 		'''
 
 		node = ast.parse(code)
-		v = MyVisitor(self.arg_trace, self.python_filename, self.get_line_comments())
+		v = MyVisitor(self.arg_trace, self.python_filename)
 		v.visit(node)
 
 		java = v.finish()
 		java.emit(e)
 
-		'''
 		pp = pprint.PrettyPrinter(indent=4)
 		pp.pprint(self.get_line_comments())
-		'''
 
 	def get_line_comments(self):
 		return self.line_comments
@@ -121,19 +120,37 @@ class StringEmitter():
 		self.out_line_num = 1
 		self.debug_line_nums = True
 		self.code_line = ""
-		self.lines = [] 
+		self.lines = []
+		self.line_comments = None
 
 	def is_fresh_line(self):
 		return self.code_line is ""
 
 	def set_source_line(self, num):
-		if num > 0:
+		if num > self.source_line_num: # We only want higher line numbers, because we don't want to process a line multiple times
+			if num > self.source_line_num+1:
+				# There is a sudden increase in the source line number
+				for i in range(self.source_line_num+1, num):
+					self.source_line_num = i
+					self.emit_new_line()
+			elif num == self.source_line_num+1:
+				if self.source_line_num in self.line_comments:
+					# There is an increase in the source line number due to formatting
+					self.emit_new_line()
+
 			self.source_line_num = num
+
+	def set_line_comments(self, line_comments):
+		self.line_comments = line_comments
 
 	def emit(self, fragment) :
 		if isinstance(fragment, basestring):
-			fragment_lines = fragment.splitlines()
-			lines_count = len(fragment_lines)
+			if fragment.find("\n") is not -1:
+				fragment_lines = fragment.splitlines()
+				lines_count = len(fragment_lines)
+			else:
+				lines_count = 1
+
 			if lines_count > 1:
 				for i in range(0, lines_count-1):
 					line = fragment_lines[i]
@@ -144,10 +161,25 @@ class StringEmitter():
 		else:
 			self.code_line = self.code_line + str(fragment)
 
+	def emit_comment(self, comment, line_num):
+		if comment is None:
+			java_base = JavaBase(line_num)
+			java_base.emit_comment_without_base(self)
+		else:
+			self.emit(comment)
+			if line_num in self.line_comments:
+				del self.line_comments[line_num]
+
 	def emit_new_line(self):
 		if self.debug_line_nums:
 			self.code_line = "%4d => %4d %s" % (self.source_line_num, self.out_line_num, self.code_line)
+
+		if self.source_line_num in self.line_comments:
+			# There still is an unused comment
+			self.emit_comment(None, self.source_line_num)
+
 		self.lines.append(self.code_line)
+
 		self.code_line = ""
 		self.out_line_num += 1
 
