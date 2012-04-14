@@ -117,10 +117,18 @@ class Parser():
 class StringEmitter():
 
 	def __init__(self):
+		self.source_line_num = 1
 		self.out_line_num = 1
-		self.debug_line_nums = False
+		self.debug_line_nums = True
 		self.code_line = ""
 		self.lines = [] 
+
+	def is_fresh_line(self):
+		return self.code_line is ""
+
+	def set_source_line(self, num):
+		if num > 0:
+			self.source_line_num = num
 
 	def emit(self, fragment) :
 		if isinstance(fragment, basestring):
@@ -138,7 +146,7 @@ class StringEmitter():
 
 	def emit_new_line(self):
 		if self.debug_line_nums:
-			self.code_line = "%4d %s" % (self.out_line_num, self.code_line)
+			self.code_line = "%4d => %4d %s" % (self.source_line_num, self.out_line_num, self.code_line)
 		self.lines.append(self.code_line)
 		self.code_line = ""
 		self.out_line_num += 1

@@ -23,17 +23,27 @@ class JavaBase():
 	def __init__(self):
 		self.comment = None
 		self.line_num = 0
-		self.emit_line_numbers = True
+		self.emit_line_numbers = False
 
+	def emit_base(self, e):
+		e.set_source_line(self.line_num)
+	
 	def emit_comment(self, e):
 		comment_emitted = False
+		is_fresh_line = e.is_fresh_line()
 
+		self.emit_base(e)
+			
 		if self.comment is not None:
-			e.emit(" //" + self.comment)
+			if not is_fresh_line: 
+				e.emit(" ")
+			e.emit("//" + self.comment)
 			comment_emitted = True
 
 		if self.emit_line_numbers and self.line_num > 0:
-			e.emit(" //"" Line " + str(self.line_num))
+			if not is_fresh_line or comment_emitted: 
+				e.emit(" ")
+			e.emit("//"" Line " + str(self.line_num))
 			comment_emitted = True
 
 		return comment_emitted
@@ -67,6 +77,8 @@ class JavaClass(JavaBase):
 		body.set_parent(self)
 
 	def emit(self, e):
+		self.emit_base(e)
+
 		e.emit("public class ")
 		e.emit(self.name)
 
@@ -92,6 +104,8 @@ class JavaFunction(JavaBase):
 		self.class_name = None
 
 	def emit(self,e):
+		self.emit_base(e)
+
 		if self.is_constructor():
 			e.emit("public ")
 			e.emit(self.class_name)			
@@ -123,6 +137,8 @@ class JavaAssign(JavaBase):
 
 
 	def emit(self,e):
+		self.emit_base(e)
+
 		#Check whether target handles assignment e.g. s['d'] = val which becomes s.get('d', val)
         	swallowAssign = getattr(self.target, "swallows_assign", None)
 		if swallowAssign:
@@ -152,6 +168,8 @@ class JavaAugAssign(JavaBase):
 
 
 	def emit(self,e):
+		self.emit_base(e)
+
 		self.target.emit(e)
 		self.op.emit(e)
 		e.emit("= ")
@@ -169,6 +187,7 @@ class JavaBinOp(JavaBase):
 		self.op = op
 
 	def emit(self,e):
+		self.emit_base(e)
 
 		#Check whether op handles arguments e.g. 
         	swallowsBinOp = getattr(self.op, "swallows_binop", None)
@@ -203,6 +222,8 @@ class JavaValueList(JavaBase):
 		self.contents = contents
 
 	def emit(self,e):
+		self.emit_base(e)
+		
 		if self.contents and len(self.contents.list) > 0:
 			e.emit("Arrays.asList({")
 			length = len(self.contents.list)
@@ -222,6 +243,7 @@ class JavaBinaryOperator(JavaBase):
 		self.op = op
 
 	def emit(self,e):
+		self.emit_base(e)
 		e.emit(self.op)
 		return False
 
@@ -322,6 +344,8 @@ class JavaVariable(JavaBase):
 		self.type_name = None
 
 	def emit(self,e):
+		self.emit_base(e)
+
 		if self.type_name:
 			e.emit(self.type_name)
 			e.emit(" ")
@@ -349,6 +373,7 @@ class JavaNum(JavaBase):
 		self.value = val
 
 	def emit(self, e):
+		self.emit_base(e)
 		e.emit(self.value)
 		return False
 
@@ -358,12 +383,14 @@ class JavaStr(JavaBase):
 		self.value = val
 
 	def emit(self, e):
+		self.emit_base(e)
 		e.emit('"')
 		e.emit(self.value) 
 		e.emit('"')
 		return False
 
 	def emit_comment(self, e):
+		self.emit_base(e)
 		if self.value.find("\n") > -1:
 			e.emit('/*')
 			e.emit(self.value) 
@@ -382,6 +409,7 @@ class JavaList(JavaBase):
 		self.list.append(obj)
 
 	def emit(self,e, skip_self = False):
+		self.emit_base(e)
 		# Don't always need these parenthesis
 		if self._parenthesis():
 			e.emit("(")
@@ -437,6 +465,7 @@ class JavaStatements(JavaBase):
 		self.list.append(obj)
 
 	def emit(self,e):
+		self.emit_base(e)
 		for i in range(0, len(self.list)):
 			newline = False
 			#This is a hack to attempt to deal with comments which appear as
@@ -474,6 +503,7 @@ class JavaIf(JavaBase):
 		self.orelse = orelse
 
 	def emit(self,e):
+		self.emit_base(e)
 		e.emit("if (")
 		self.test.emit(e)
 		self.emit_line_with_comment(e, ") {")
@@ -494,6 +524,7 @@ class JavaCall(JavaBase):
 		self.args = args
 
 	def emit(self, e):
+		self.emit_base(e)
 		self.name.emit(e)
 		e.emit("(")
 		self.args.emit(e)
@@ -508,6 +539,7 @@ class JavaCompare(JavaBase):
 		self.comparators = comparators
 
 	def emit(self, e):
+		self.emit_base(e)
 		#Check whether op handles the arguments e.g. 'd' in s which becomes s.contains('d')
         	swallowArguments = getattr(self.ops, "swallows_arguments", None)
 		if swallowArguments:
@@ -572,6 +604,7 @@ class JavaEq(JavaBinaryOperator):
 class JavaNotIn(JavaBase):
 
 	def emit(self, e, comparators, left):
+		self.emit_base(e)
 		e.emit("!")
 		comparators.emit(e)
 		e.emit(".contains(")
@@ -584,6 +617,7 @@ class JavaNotIn(JavaBase):
 class JavaIn(JavaBase):
 
 	def emit(self, e, comparators, left):
+		self.emit_base(e)
 		comparators.emit(e)
 		e.emit(".contains(")
 		left.emit(e)
@@ -600,6 +634,7 @@ class JavaAttribute(JavaBase):
 		self.value = value
 		self.attr = attr
 	def emit(self, e):
+		self.emit_base(e)
 		self.value.emit(e)
 		e.emit(".")
 		e.emit(self.attr)
@@ -611,6 +646,7 @@ class JavaReturn(JavaBase):
 		self.value = value
 
 	def emit(self, e):
+		self.emit_base(e)
 		if self.value:	
 			e.emit("return ")
 			self.value.emit(e)
@@ -626,6 +662,7 @@ class JavaSubscript(JavaBase):
 		self.store = store
 
 	def emit(self, e):
+		self.emit_base(e)
 		self.value.emit(e)
 		if isinstance(self.jslice, JavaSlice):
 			self.jslice.emit(e)			
@@ -639,6 +676,7 @@ class JavaSubscript(JavaBase):
 		return False
 
 	def emit_store(self, e, value):
+		self.emit_base(e)
 		self.value.emit(e)
 		e.emit(".put(")
 		self.jslice.emit(e)
@@ -659,6 +697,7 @@ class JavaSlice(JavaBase):
 		self.step = step
 
 	def emit(self, e):
+		self.emit_base(e)
 		#Assume it is a string - most common case...
 		if self.upper:
 			e.emit(".subSequence(")
@@ -682,6 +721,7 @@ class JavaFor(JavaBase):
 		self.body = body
 
 	def emit(self, e):
+		self.emit_base(e)
 		e.emit("for(")
 		self.target.emit(e)
 		e.emit(":")
@@ -702,6 +742,7 @@ class JavaPrint(JavaBase):
 		self.values = values
 
 	def emit(self,e):
+		self.emit_base(e)
 		e.emit("System.out.println(")
 		self.values.emit(e)
 		e.emit(")")
@@ -742,6 +783,7 @@ class JavaTryExcept(JavaBase):
 		self.handlers = handlers
 
 	def emit(self,e):
+		self.emit_base(e)
 		self.emit_line_with_comment(e, "try {")
 		self.body.emit(e)
 		e.emit("}")
@@ -756,6 +798,7 @@ class JavaTryFinally(JavaBase):
 		self.finalbody = finalbody
 
 	def emit(self,e):
+		self.emit_base(e)
 		self.emit_line_with_comment(e, "try {")
 		self.body.emit(e)
 		e.emit_line("} finally {")
@@ -771,6 +814,7 @@ class JavaExceptHandler(JavaBase):
 		self.body = body
 
 	def emit(self,e):
+		self.emit_base(e)
 		e.emit("catch (")
 		self.name.emit(e)
 		self.emit_line_with_comment(e, ") {")
@@ -786,6 +830,7 @@ class JavaWhile(JavaBase):
 		self.test = test
 
 	def emit(self,e):
+		self.emit_base(e)
 		e.emit("while ")
 		self.test.emit(e)
 		self.emit_line_with_comment(e, "{")
