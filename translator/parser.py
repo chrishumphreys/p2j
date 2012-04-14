@@ -131,9 +131,10 @@ class StringEmitter():
 		if num > self.source_line_num: # We only want higher line numbers, because we don't want to process a line multiple times
 			if num > self.source_line_num+1:
 				# There is a sudden jump in the source line number
-				for i in range(self.source_line_num+1, num):
-					self.source_line_num = i
-					self.emit_new_line()
+				if len(self.lines) > 0:
+					for i in range(self.source_line_num+1, num):
+						self.source_line_num = i
+						self.emit_new_line()
 			elif num == self.source_line_num+1:
 				# There is an increase in the source line number due to formatting
 				if self.source_line_num in self.line_comments:
