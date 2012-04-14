@@ -118,7 +118,7 @@ class StringEmitter():
 	def __init__(self):
 		self.source_line_num = 1
 		self.out_line_num = 1
-		self.debug_line_nums = True
+		self.debug_line_nums = False
 		self.code_line = ""
 		self.lines = []
 		self.line_comments = None
