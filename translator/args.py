@@ -27,6 +27,9 @@ class ArgTrace:
 
 
 	def add_trace(self, trace_line):
+		last_char = trace_line[-1:]
+		if last_char == "\n":
+			trace_line = trace_line[0:-1]
 		parts = trace_line.split(":")
 		filename = parts[0]
 		line = parts[1]
