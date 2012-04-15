@@ -517,9 +517,8 @@ class JavaIf(JavaBase):
 		self.emit_line_with_comment(e, ") {")
 		self.body.emit(e)
 		if self.orelse:
-			e.emit_line("} else {")
-			# CHANGEME: We are currently missing comments for else: lines
-			self.orelse.emit(e)
+			e.emit("} else {")
+			self.orelse.emit(e) # This will have the side effect of emitting a line break before due tot the way formatting retention is implemented
 			e.emit_line("}")
 		else:
 			e.emit_line("}")
@@ -809,7 +808,7 @@ class JavaTryFinally(JavaBase):
 		self.emit_base(e)
 		self.emit_line_with_comment(e, "try {")
 		self.body.emit(e)
-		e.emit_line("} finally {")
+		e.emit("} finally {") # See else-clause above
 		self.finalbody.emit(e)
 		e.emit("}")
 		return False
