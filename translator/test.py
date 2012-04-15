@@ -91,7 +91,7 @@ class T():
 '''
 		p = Parser(None, None)
 		res = p.parse_to_string(code)
-		self.assertEqual('public class T {\nstat = "h";\ns2 = 2;\npublic void met1() {\ng = "10";\n}\npublic void met2() {\ng = "10";\n}\npublic void met3() {\ng = "10";\n}\n}\n', res)
+		self.assertEqual('public class T {\n\nstat = "h";\ns2 = 2;\n\npublic void met1() {\ng = "10";\n}\npublic void met2() {\ng = "10";\n}\npublic void met3() {\ng = "10";\n}\n}\n', res)
 
 
 	def test_multiple_statements_top_level(self):
@@ -108,7 +108,7 @@ def met3(self):
 '''
 		p = Parser(None, None)
 		res = p.parse_to_string(code)
-		self.assertEqual('stat = "h";\ns2 = 2;\npublic void met1() {\ng = "10";\n}\npublic void met2() {\ng = "10";\n}\npublic void met3() {\ng = "10";\n}\n', res)
+		self.assertEqual('stat = "h";\ns2 = 2;\n\npublic void met1() {\ng = "10";\n}\npublic void met2() {\ng = "10";\n}\npublic void met3() {\ng = "10";\n}\n', res)
 
 
 	def test_comments(self):
@@ -395,7 +395,7 @@ rects = ['c', 'b', 'd']
 '''
 		p = Parser(None, None)
 		res = p.parse_to_string(code)
-		self.assertEqual('rects = Arrays.asList({"c","b","d"});\n', res)
+		self.assertEqual('rects = Arrays.asList({"c", "b", "d"});\n', res)
 
 	def test_list_ints(self):
 		code = '''
@@ -420,7 +420,7 @@ a = "blah %s %d" % ("jj", 2)
 '''
 		p = Parser(None, None)
 		res = p.parse_to_string(code)
-		self.assertEqual('a = String.format("blah %s %d","jj", 2);\n', res)
+		self.assertEqual('a = String.format("blah %s %d", "jj", 2);\n', res)
 
 	def test_gt(self):
 		code = '''
@@ -485,7 +485,7 @@ for u in c_units:
 '''
 		p = Parser(None, None)
 		res = p.parse_to_string(code)
-		self.assertEqual('for(u:c_units) {a = b;\nd = e;\n};\n', res)
+		self.assertEqual('for(u:c_units) {\na = b;\nd = e;\n};\n', res)
 
 
 	def test_print(self):
@@ -531,7 +531,7 @@ blah=1 # comment
 '''
 		p = Parser(None, None)
 		res = p.parse_to_string(code)
-		self.assertEqual('blah = 1;\n//  comment \n', res)
+		self.assertEqual('blah = 1; // comment\n', res)
 
 
 	def test_tryexception(self):
@@ -548,7 +548,7 @@ def a():
 '''
 		p = Parser(None, None)
 		res = p.parse_to_string(code)
-		self.assertEqual('public static void a() {\ntry{a = b;\nb = c;\n}catch (IOError) {return;\n};\ncatch (AA) {a = b;\nreturn;\n};\n;\n}\n', res)
+		self.assertEqual('public static void a() {\ntry {\na = b;\nb = c;\n}\ncatch (IOError) {\nreturn;\n};\ncatch (AA) {\na = b;\nreturn;\n};\n;\n}\n', res)
 
 
 	def test_tryfinally(self):
@@ -562,7 +562,7 @@ finally:
 '''
 		p = Parser(None, None)
 		res = p.parse_to_string(code)
-		self.assertEqual('try{a = b;\nb = c;\n} finally {a = 0;\nb = 0;\n};\n', res)
+		self.assertEqual('try {\na = b;\nb = c;\n} finally {\na = 0;\nb = 0;\n};\n', res)
 
 
 	def test_while(self):
@@ -574,7 +574,7 @@ while a:
 '''
 		p = Parser(None, None)
 		res = p.parse_to_string(code)
-		self.assertEqual('a = 0;\nwhile a{a = b;\nc = d;\n};\n', res)
+		self.assertEqual('a = 0;\nwhile a{\na = b;\nc = d;\n};\n', res)
 
 
 	def test_ignores_strings_with_hash_when_processing_comments(self):
