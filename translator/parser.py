@@ -123,6 +123,8 @@ class StringEmitter():
 		self.lines = []
 		self.line_comments = None
 		self.want_linebreak = False
+		self.indent = False
+		self.level = 0
 
 	def is_fresh_line(self):
 		return self.code_line == ""
@@ -146,6 +148,15 @@ class StringEmitter():
 
 	def set_line_comments(self, line_comments):
 		self.line_comments = line_comments
+
+	def enable_indentation(self, want_indentation):
+		self.indent = want_indentation
+
+	def indentation_level_up(self):
+		self.level += 1
+
+	def indentation_level_down(self):
+		self.level -= 1
 
 	def emit(self, fragment):
 		if self.want_linebreak:
@@ -180,6 +191,9 @@ class StringEmitter():
 				del self.line_comments[line_num]
 
 	def emit_new_line(self):
+		if self.indent and self.level > 0:
+			self.code_line = ("\t" * self.level) + self.code_line
+
 		if self.debug_line_nums:
 			self.code_line = "%4d => %4d %s" % (self.source_line_num, self.out_line_num, self.code_line)
 

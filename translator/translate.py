@@ -47,6 +47,7 @@ def translate_files(input_filename):
 	#pathname = os.path.abspath(input_filename)
 	p = Parser(args, pathname)
 	e = OutputEmitter(path)
+	e.enable_indentation(True)
 	p.parse(code, e)
 	e.finish()
 	

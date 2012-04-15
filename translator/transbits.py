@@ -88,8 +88,10 @@ class JavaClass(JavaBase):
 			self.supers.emit(e)
 
 		self.emit_line_with_comment(e, " {")
+		e.indentation_level_up()
 		self.functions.emit(e)
-		
+
+		e.indentation_level_down()
 		e.emit_line("}")
 		e.class_end()
 		return True
@@ -119,7 +121,9 @@ class JavaFunction(JavaBase):
 		e.emit("(")
 		self.args.emit(e, True)
 		self.emit_line_with_comment(e, ") {")
+		e.indentation_level_up()
 		self.body.emit(e)
+		e.indentation_level_down()
 		e.emit_line("}")
 		return True
 
@@ -515,12 +519,17 @@ class JavaIf(JavaBase):
 		e.emit("if (")
 		self.test.emit(e)
 		self.emit_line_with_comment(e, ") {")
+		e.indentation_level_up()
 		self.body.emit(e)
 		if self.orelse:
+			e.indentation_level_down()
 			e.emit("} else {")
+			e.indentation_level_up()
 			self.orelse.emit(e) # This will have the side effect of emitting a line break before due tot the way formatting retention is implemented
+			e.indentation_level_down()
 			e.emit_line("}")
 		else:
+			e.indentation_level_down()
 			e.emit_line("}")
 		return True
 
@@ -734,7 +743,9 @@ class JavaFor(JavaBase):
 		e.emit(":")
 		self.iterator.emit(e)
 		self.emit_line_with_comment(e, ") {")
+		e.indentation_level_up()
 		self.body.emit(e)
+		e.indentation_level_down()
 		e.emit("}")
 
 class JavaPass(JavaBase):
@@ -792,7 +803,9 @@ class JavaTryExcept(JavaBase):
 	def emit(self,e):
 		self.emit_base(e)
 		self.emit_line_with_comment(e, "try {")
+		e.indentation_level_up()
 		self.body.emit(e)
+		e.indentation_level_down()
 		e.emit("}")
 		self.handlers.emit(e)
 		return False
@@ -807,9 +820,13 @@ class JavaTryFinally(JavaBase):
 	def emit(self,e):
 		self.emit_base(e)
 		self.emit_line_with_comment(e, "try {")
+		e.indentation_level_up()
 		self.body.emit(e)
+		e.indentation_level_down()
 		e.emit("} finally {") # See else-clause above
+		e.indentation_level_up()
 		self.finalbody.emit(e)
+		e.indentation_level_down()
 		e.emit("}")
 		return False
 
@@ -825,7 +842,9 @@ class JavaExceptHandler(JavaBase):
 		e.emit("catch (")
 		self.name.emit(e)
 		self.emit_line_with_comment(e, ") {")
+		e.indentation_level_up()
 		self.body.emit(e)
+		e.indentation_level_down()
 		e.emit("}")
 		return False
 
@@ -841,7 +860,9 @@ class JavaWhile(JavaBase):
 		e.emit("while ")
 		self.test.emit(e)
 		self.emit_line_with_comment(e, "{")
+		e.indentation_level_up()
 		self.body.emit(e)
+		e.indentation_level_down()
 		e.emit("}")
 		return False
 
