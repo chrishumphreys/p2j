@@ -523,9 +523,10 @@ class JavaIf(JavaBase):
 		self.body.emit(e)
 		if self.orelse:
 			e.indentation_level_down()
-			e.emit("} else {")
+			e.emit_line("} else {")
+			e.source_line_num += 1 # This is a hack to prevent an empty line
 			e.indentation_level_up()
-			self.orelse.emit(e) # This will have the side effect of emitting a line break before due tot the way formatting retention is implemented
+			self.orelse.emit(e) # This would have the side effect of emitting a line break after the else due to the way formatting retention is implemented
 			e.indentation_level_down()
 			e.emit_line("}")
 		else:
