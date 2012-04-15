@@ -391,12 +391,19 @@ class JavaStr(JavaBase):
 		return False
 
 	def emit_comment(self, e):
-		self.emit_base(e)
 		if self.value.find("\n") > -1:
+			comment_lines = self.value.split("\n")
+			lines_count = len(comment_lines)
+			self.line_num -= lines_count # calculate and set line the comment starts on
+			self.emit_base(e)
 			e.emit('/*')
-			e.emit(self.value) 
+			for i in range(0, lines_count):
+				self.line_num += 1
+				e.set_source_line(self.line_num)
+				e.emit(comment_lines[i])
 			e.emit("*/")
 		else:
+			self.emit_base(e)
 			e.emit("//")
 			e.emit(self.value)
 		return False

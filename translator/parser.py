@@ -155,7 +155,7 @@ class StringEmitter():
 
 		if isinstance(fragment, basestring):
 			if fragment.find("\n") != -1:
-				fragment_lines = fragment.splitlines()
+				fragment_lines = fragment.split("\n")
 				lines_count = len(fragment_lines)
 			else:
 				lines_count = 1
