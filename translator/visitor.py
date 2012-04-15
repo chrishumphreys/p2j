@@ -129,7 +129,7 @@ class MyVisitor(ast.NodeVisitor):
 				elif isinstance(arg, JavaTuple):
 					arg_name = "anonymous_list"
 
-				if arg_name is "":
+				if arg_name == "":
 					arg_name = "unknown_arg"
 					type = "unknown_type"
 				else:

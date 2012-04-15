@@ -100,7 +100,7 @@ class Parser():
 
 							comment = m.group(3)
 
-							if code is "":
+							if code == "":
 								newline = white_space + "\"\"\" " + comment + " \"\"\""
 							else:
 								self.line_comments[l+1] = comment
@@ -125,7 +125,7 @@ class StringEmitter():
 		self.want_linebreak = False
 
 	def is_fresh_line(self):
-		return self.code_line is ""
+		return self.code_line == ""
 
 	def set_source_line(self, num):
 		if num > self.source_line_num: # We only want higher line numbers, because we don't want to process a line multiple times
@@ -150,11 +150,11 @@ class StringEmitter():
 	def emit(self, fragment):
 		if self.want_linebreak:
 			self.want_linebreak = False
-			if self.code_line is not "":
+			if self.code_line != "":
 				self.emit_new_line()
 
 		if isinstance(fragment, basestring):
-			if fragment.find("\n") is not -1:
+			if fragment.find("\n") != -1:
 				fragment_lines = fragment.splitlines()
 				lines_count = len(fragment_lines)
 			else:
