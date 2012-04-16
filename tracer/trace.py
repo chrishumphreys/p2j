@@ -24,6 +24,7 @@ import os
 import sys
 import inspect
 from types import *
+from collections import OrderedDict # Requires Python 2.7+
 import pprint
 
 from gameengine import *
@@ -45,14 +46,14 @@ def describe_arg(a, arg_values):
 		if a != "self":
 			a_value = arg_values.locals[a]
 			a_type = a_value.__class__.__name__
-			return ":%s,%s" % (a, a_type)
+			return a, a_type
 		else:
-			return ""
+			return None, None
 	elif type(a) is ListType: # ListType is not hashable
-		return ":anonymous_list,%s" % (a)
+		return "anonymous_list", str(a)
 	else:
 		print "Unexpected type for %s: %s" % (a, type(a))
-		return ""
+		return None, None
 
 
 def traceit(frame, event, arg):
@@ -72,22 +73,55 @@ def traceit(frame, event, arg):
 
 			key = file_name + ":" + str(frame_info.lineno) + ":" + frame_info.function
 
-			if event == "call" and not key in trace_data:
-				arg_values = inspect.getargvalues(frame)
-				args = ""
-				for a in arg_values.args:
-					args += describe_arg(a, arg_values)
-				trace_data[key] = args
-				if DEBUG_TRACEIT:
-					print key + args
-			elif event == "return" and not key in trace_return_data:
-				if arg == None:
-					trace_return_data[key] = ":" "void"
+			if event == "call":
+				if key in trace_data:
+					this_trace = trace_data[key]
 				else:
-					trace_return_data[key] = ":" + arg.__class__.__name__
+					this_trace = OrderedDict()
+					trace_data[key] = this_trace
+
+				arg_values = inspect.getargvalues(frame)
+				for a in arg_values.args:
+					arg_name, type = describe_arg(a, arg_values)
+					if arg_name is not None:
+						if arg_name in this_trace:
+							types_set = this_trace[arg_name]
+							if type not in types_set:
+								types_set.add(type)
+						else:
+							types_set = set()
+							types_set.add(type)
+							this_trace[arg_name] = types_set
+
+				#if DEBUG_TRACEIT:
+				#	print key + args
+			elif event == "return":
+				if key in trace_return_data:
+					types_set = trace_return_data[key]
+				else:
+					types_set = set()
+					trace_return_data[key] = types_set
+
+				if arg is None:
+					type = "void"
+				else:
+					type = arg.__class__.__name__
+
+				types_set.add(type)
+
 
 	return traceit
 
+def description_for_types_set(types_set):
+	return "/".join(types_set)
+
+def description_for_arg_values(arg_values):
+	description = ""
+	for arg_name, types_set in arg_values.iteritems():
+		description += ":" + arg_name
+		if len(types_set) > 0:
+			description += "," + description_for_types_set(types_set)
+	return description
 
 def save_trace(trace_dict, extension):
 	current_dir = os.getcwd() + "/"
@@ -110,7 +144,12 @@ def save_trace(trace_dict, extension):
 
 			prev_file = current_file
 
-		pair_string = key + value + "\n"
+		if isinstance(value, OrderedDict):
+			value_string = description_for_arg_values(value)
+		elif isinstance(value, set):
+			value_string = ":" + description_for_types_set(value)
+
+		pair_string = key + value_string + "\n"
 		output.write(pair_string)
 
 	if output is not None:
