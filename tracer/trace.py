@@ -20,12 +20,16 @@
  """
 
 
+import os
 import sys
 import inspect
 from types import *
 from gameengine import *
 
 TRACE_BASE = "/home/chris/ab/gamemenu.py"
+
+
+OMIT_PATH = True
 
 trace_data = dict()
 trace_return_data = dict()
@@ -55,7 +59,13 @@ def traceit(frame, event, arg):
 		if filename[0:len(TRACE_BASE)] == TRACE_BASE:
 
 			frame_info = inspect.getframeinfo(frame)
-			key = frame_info.filename + ":" + str(frame_info.lineno) + ":" + frame_info.function
+			file_path = frame_info.filename
+			if OMIT_PATH:
+				dir, file_name = os.path.split(file_path)
+			else:
+				file_name = file_path
+
+			key = file_name + ":" + str(frame_info.lineno) + ":" + frame_info.function
 
 			if event == "call" and not key in trace_data:
 				arg_values = inspect.getargvalues(frame)
