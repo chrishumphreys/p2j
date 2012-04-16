@@ -78,7 +78,7 @@ def traceit(frame, event, arg):
 				if arg == None:
 					trace_return_data[key] = "void"
 				else:
-					trace_return_data[key] = "%s" % (type(arg))
+					trace_return_data[key] = arg.__class__.__name__
 
 	return traceit
 
