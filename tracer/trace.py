@@ -28,6 +28,8 @@ from gameengine import *
 
 TRACE_BASE = "/home/chris/ab/gamemenu.py"
 
+TRACE_FILE_EXT='.trace'
+TRACE_RETURN_FILE_EXT='.return-trace'
 
 OMIT_PATH = True
 
@@ -76,12 +78,39 @@ def traceit(frame, event, arg):
 				print key + args
 			elif event == "return" and not key in trace_return_data:
 				if arg == None:
-					trace_return_data[key] = "void"
+					trace_return_data[key] = ":" "void"
 				else:
-					trace_return_data[key] = arg.__class__.__name__
+					trace_return_data[key] = ":" + arg.__class__.__name__
 
 	return traceit
 
+
+def save_trace(trace_dict, extension):
+	current_dir = os.getcwd() + "/"
+	prev_file = None
+	output = None
+
+	for key, value in trace_dict.iteritems():
+		current_file, tail = key.split(":", 1)
+
+		if current_file != prev_file:
+			if output is not None:
+				output.close()
+
+			if OMIT_PATH:
+				current_file_path = current_dir + current_file
+			else:
+				current_file_path = current_file
+
+			output = open(current_file_path + extension, "w")
+
+			prev_file = current_file
+
+		pair_string = key + value + "\n"
+		output.write(pair_string)
+
+	if output is not None:
+		output.close()
 
 if __name__ == '__main__':
 	print "starting"
@@ -89,6 +118,6 @@ if __name__ == '__main__':
 
 	main(sys.argv[1:])
 
-	#print "%s" % trace_data
-	#print "%s" % trace_return_data
+	save_trace(trace_data, TRACE_FILE_EXT)
+	save_trace(trace_return_data, TRACE_RETURN_FILE_EXT)
 
