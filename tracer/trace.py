@@ -24,6 +24,7 @@ import os
 import sys
 import inspect
 from types import *
+import pprint
 
 from gameengine import *
 
@@ -120,6 +121,9 @@ if __name__ == '__main__':
 	sys.settrace(traceit)
 
 	main(sys.argv[1:])
+
+	#pp = pprint.PrettyPrinter(indent=4)
+	#pp.pprint(trace_data)
 
 	save_trace(trace_data, TRACE_FILE_EXT)
 	save_trace(trace_return_data, TRACE_RETURN_FILE_EXT)
