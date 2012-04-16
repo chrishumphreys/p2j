@@ -24,6 +24,7 @@ import os
 import sys
 import inspect
 from types import *
+
 from gameengine import *
 
 TRACE_BASE = "/home/chris/ab/gamemenu.py"
