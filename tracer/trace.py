@@ -26,6 +26,7 @@ import inspect
 from types import *
 from collections import OrderedDict # Requires Python 2.7+
 import pprint
+import cPickle
 
 from gameengine import *
 
@@ -33,6 +34,10 @@ TRACE_BASE = "/home/chris/ab/gamemenu.py"
 
 TRACE_FILE_EXT='.trace'
 TRACE_RETURN_FILE_EXT='.return-trace'
+
+TRACE_PICKLED_FILE_EXT='.pickled-trace'
+TRACE_PICKLED_RETURN_FILE_EXT='.pickled-return-trace'
+
 
 OMIT_PATH = True
 DEBUG_TRACEIT = True
@@ -155,9 +160,38 @@ def save_trace(trace_dict, extension):
 	if output is not None:
 		output.close()
 
+def pickle_data(trace_dict, pickle_file_path):
+	try:
+		pickle_file = open(pickle_file_path, 'wb')
+	except IOError as e:
+		print "Couldn't write pickled data to " + pickle_file_path
+		return
+
+	cPickle.dump(trace_dict, pickle_file)
+
+	pickle_file.close()
+
+def unpickle_data(pickle_file_path):
+	try:
+		pickle_file = open(pickle_file_path, 'rb')
+	except IOError as e:
+		print "No previous pickled data at " + pickle_file_path
+		return dict()
+
+	trace_data = cPickle.load(pickle_file)
+
+	pickle_file.close()
+
+	return trace_data
+
 if __name__ == '__main__':
 	print "starting"
 	sys.settrace(traceit)
+
+	targeted_file_path = sys.argv[1]
+
+	trace_data = unpickle_data(targeted_file_path + TRACE_PICKLED_FILE_EXT)
+	trace_return_data = unpickle_data(targeted_file_path + TRACE_PICKLED_RETURN_FILE_EXT)
 
 	main(sys.argv[1:])
 
@@ -166,4 +200,7 @@ if __name__ == '__main__':
 
 	save_trace(trace_data, TRACE_FILE_EXT)
 	save_trace(trace_return_data, TRACE_RETURN_FILE_EXT)
+
+	pickle_data(trace_data, targeted_file_path + TRACE_PICKLED_FILE_EXT)
+	pickle_data(trace_return_data, targeted_file_path + TRACE_PICKLED_RETURN_FILE_EXT)
 
