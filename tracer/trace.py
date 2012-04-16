@@ -32,6 +32,7 @@ TRACE_FILE_EXT='.trace'
 TRACE_RETURN_FILE_EXT='.return-trace'
 
 OMIT_PATH = True
+DEBUG_TRACEIT = True
 
 trace_data = dict()
 trace_return_data = dict()
@@ -75,7 +76,8 @@ def traceit(frame, event, arg):
 				for a in arg_values.args:
 					args += describe_arg(a, arg_values)
 				trace_data[key] = args
-				print key + args
+				if DEBUG_TRACEIT:
+					print key + args
 			elif event == "return" and not key in trace_return_data:
 				if arg == None:
 					trace_return_data[key] = ":" "void"
