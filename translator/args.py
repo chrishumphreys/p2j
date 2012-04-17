@@ -84,9 +84,11 @@ class ArgTrace:
 	def find_return_type(self, filename, line, method):
 		type_data = self.find_type_data(self.return_types, filename, line, method)
 		if type_data is not None:
-			return type_data
+			return set(type_data.split("/"))
 		else:
-			return "unkown_return_type"
+			new_set = set()
+			new_set.add("unkown_return_type")
+			return new_set
 
 	def find_method_args(self, filename, line, method):
 		args = self.find_type_data(self.args, filename, line, method)

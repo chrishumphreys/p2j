@@ -55,6 +55,8 @@ class MyVisitor(ast.NodeVisitor):
 		self.active = ActiveStack()
 		self.arg_trace = arg_trace
 		self.python_filename = python_filename
+		self.function_stack = ActiveStack()
+		self.return_types = dict()
 
 	def visit_Str(self, node):
 		if DEBUG: print "Found string %s" % node.s
@@ -99,6 +101,7 @@ class MyVisitor(ast.NodeVisitor):
 		if DEBUG: 
 			print "-----------start node  %s   -----------" % node.__class__.__name__
 			print ast.dump(node, True, True)
+		self.function_stack.push(node)
 		start = self.active.size()
 		self.iter_field(node.body)
 		end = self.active.size()
@@ -112,14 +115,18 @@ class MyVisitor(ast.NodeVisitor):
 		# identify argument types...
 		self.infer_arguments_types(node, args)
 		java_func = JavaFunction(node.name, args, body)
-		java_func.set_return_type(self.infer_return_type(node))
+		if node in self.return_types:
+			return_types = self.return_types[node]
+		else:
+			return_types = None
+		java_func.set_return_type(return_types)
 		java_func.set_metadata(node)
 		self.active.push(java_func)
+		self.function_stack.pop()
 		if DEBUG: print "-----------end node   %s -----------" % node.__class__.__name__
 
 
-	def infer_return_type(self, function_node):
-		lineno = function_node.lineno
+	def infer_return_type(self, function_node, lineno):
 		method_name = function_node.name
 		type = self.arg_trace.find_return_type(self.python_filename, lineno, method_name)
 		return type
@@ -456,9 +463,16 @@ class MyVisitor(ast.NodeVisitor):
 			value = self.active.pop()
 		else:
 			value = None
-		obj = JavaReturn(value)
-		obj.set_metadata(node)
-		self.active.push(obj)
+		java_return = JavaReturn(value)
+		function_node = self.function_stack.peek()
+		if function_node in self.return_types:
+			types_set = self.return_types[function_node]
+		else:
+			types_set = set()
+			self.return_types[function_node] = types_set
+		types_set |= self.infer_return_type(function_node, node.lineno)
+		java_return.set_metadata(node)
+		self.active.push(java_return)
 
 	def visit_Subscript(self, node):
 		self.iter_field(node.value)

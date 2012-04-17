@@ -114,10 +114,15 @@ class JavaFunction(JavaBase):
 			e.emit("public ")
 			e.emit(self.class_name)			
 		else:
+			if self.return_type is not None:
+				return_type = "/".join(self.return_type)
+			else:
+				return_type = "void"
+
 			if self.args.list_contains_self():
-				e.emit("public " + self.return_type + " ")
+				e.emit("public " + return_type + " ")
 			else:					
-				e.emit("public static " + self.return_type + " ")
+				e.emit("public static " + return_type + " ")
 			e.emit(self.name)
 		e.emit("(")
 		self.args.emit(e, True)
