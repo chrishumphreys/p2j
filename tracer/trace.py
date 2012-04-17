@@ -39,7 +39,7 @@ TRACE_PICKLED_FILE_EXT='.pickled-trace'
 TRACE_PICKLED_RETURN_FILE_EXT='.pickled-return-trace'
 
 
-OMIT_PATH = True
+USE_RELATIVE_SOURCE_FILE_PATHS = True
 DEBUG_TRACEIT = True
 
 trace_data = dict()
@@ -71,7 +71,7 @@ def traceit(frame, event, arg):
 
 			frame_info = inspect.getframeinfo(frame)
 			file_path = frame_info.filename
-			if OMIT_PATH:
+			if USE_RELATIVE_SOURCE_FILE_PATHS:
 				dir, file_name = os.path.split(file_path)
 			else:
 				file_name = file_path
@@ -140,7 +140,7 @@ def save_trace(trace_dict, extension):
 			if output is not None:
 				output.close()
 
-			if OMIT_PATH:
+			if USE_RELATIVE_SOURCE_FILE_PATHS:
 				current_file_path = current_dir + current_file
 			else:
 				current_file_path = current_file
