@@ -64,7 +64,7 @@ class ArgTrace:
 		args = ArgTrace()		
 		with open(trace_file) as f:
 			line = f.readline()
-	                while line:
-        	                args.add_trace(line)
+			while line:
+				args.add_trace(line)
 				line = f.readline()
 		return args
