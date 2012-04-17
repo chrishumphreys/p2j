@@ -112,16 +112,24 @@ class MyVisitor(ast.NodeVisitor):
 		# identify argument types...
 		self.infer_arguments_types(node, args)
 		java_func = JavaFunction(node.name, args, body)
+		java_func.set_return_type(self.infer_return_type(node))
 		java_func.set_metadata(node)
 		self.active.push(java_func)
 		if DEBUG: print "-----------end node   %s -----------" % node.__class__.__name__
 
+
+	def infer_return_type(self, function_node):
+		lineno = function_node.lineno
+		method_name = function_node.name
+		type = self.arg_trace.find_return_type(self.python_filename, lineno, method_name)
+		return type
 
 	def infer_arguments_types(self, function_node, arguments):
 		lineno = function_node.lineno
 		method_name = function_node.name
 		#print "Line no: %d method %s" % (lineno, method_name)
 		if self.arg_trace:
+			args = self.arg_trace.find_method_args(self.python_filename, lineno, method_name)
 			for arg in arguments.list:
 				arg_name = ""
 				if isinstance(arg, JavaVariable):
@@ -133,7 +141,7 @@ class MyVisitor(ast.NodeVisitor):
 					arg_name = "unknown_arg"
 					type = "unknown_type"
 				else:
-					type = self.arg_trace.find_method_arg(self.python_filename, lineno, method_name, arg_name)
+					type = self.arg_trace.get_method_arg(args, arg_name)
 
 				arg.set_type(type)
 				print "argument %s type %s" % (arg_name, type)

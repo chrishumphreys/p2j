@@ -26,14 +26,16 @@ import sys
 from parser import *
 
 TRACE_FILE_EXT='.trace'
+TRACE_RETURN_FILE_EXT='.return-trace'
 
+USE_RELATIVE_SOURCE_FILE_PATHS = True
 
 def translate_files(input_filename):
 
 	pathname = os.getcwd() + "/" + input_filename
 
 	#load argument trace file
-	args = ArgTrace.load_trace_file(input_filename + TRACE_FILE_EXT)
+	args = ArgTrace.load_trace_files(input_filename, TRACE_FILE_EXT, TRACE_RETURN_FILE_EXT, USE_RELATIVE_SOURCE_FILE_PATHS)
 	
 	f = open(pathname)
 	code = f.read() 

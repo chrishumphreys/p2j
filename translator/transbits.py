@@ -105,6 +105,7 @@ class JavaFunction(JavaBase):
 		self.args = args
 		self.body = body
 		self.class_name = None
+		self.return_type = "void"
 
 	def emit(self,e):
 		self.emit_base(e)
@@ -114,9 +115,9 @@ class JavaFunction(JavaBase):
 			e.emit(self.class_name)			
 		else:
 			if self.args.list_contains_self():
-				e.emit("public void ")
+				e.emit("public " + self.return_type + " ")
 			else:					
-				e.emit("public static void ")
+				e.emit("public static " + self.return_type + " ")
 			e.emit(self.name)
 		e.emit("(")
 		self.args.emit(e, True)
@@ -129,6 +130,9 @@ class JavaFunction(JavaBase):
 
 	def set_class(self, clazz):
 		self.class_name = clazz.name
+
+	def set_return_type(self, return_type):
+		self.return_type = return_type
 
 	def is_constructor(self):
 		return self.name == '__init__'
@@ -370,7 +374,8 @@ class JavaVariable(JavaBase):
 		return self.name == 'self'
 
 	def set_type(self, typename):
-		self.type_name = typename	
+		if typename is not None:
+			self.type_name = typename
 
 class JavaNum(JavaBase):
 	def __init__(self, val):
