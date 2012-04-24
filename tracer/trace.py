@@ -128,12 +128,38 @@ def description_for_arg_values(arg_values):
 			description += "," + description_for_types_set(types_set)
 	return description
 
+
+def compare_keys(item1, item2):
+	parts1 = item1[0].split(":")
+	parts2 = item2[0].split(":")
+
+	filename1 = parts1[0]
+	filename2 = parts2[0]
+
+	filename_cmp = cmp(filename1, filename2)
+	if filename_cmp == 0:
+		line1 = int(parts1[1])
+		line2 = int(parts2[1])
+
+		line_cmp = cmp(line1, line2)
+		if line_cmp == 0:
+			method1 = parts1[2]
+			method2 = parts2[2]
+
+			method_cmp = cmp(method1, method2)
+			return method_cmp
+		else:
+			return line_cmp
+	else:
+		return filename_cmp
+
+
 def save_trace(trace_dict, extension):
 	current_dir = os.getcwd() + "/"
 	prev_file = None
 	output = None
 
-	for key, value in trace_dict.iteritems():
+	for key, value in iter(sorted(trace_dict.items(), cmp=compare_keys)):
 		current_file, tail = key.split(":", 1)
 
 		if current_file != prev_file:
