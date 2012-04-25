@@ -464,6 +464,7 @@ class MyVisitor(ast.NodeVisitor):
 		else:
 			value = None
 		java_return = JavaReturn(value)
+
 		function_node = self.function_stack.peek()
 		if function_node in self.return_types:
 			types_set = self.return_types[function_node]
@@ -471,6 +472,7 @@ class MyVisitor(ast.NodeVisitor):
 			types_set = set()
 			self.return_types[function_node] = types_set
 		types_set |= self.infer_return_type(function_node, node.lineno)
+		
 		java_return.set_metadata(node)
 		self.active.push(java_return)
 
