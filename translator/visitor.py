@@ -174,9 +174,9 @@ class MyVisitor(ast.NodeVisitor):
 		right = self.active.pop()
 		op = self.active.pop()
 		left = self.active.pop()
-		java_assign = JavaBinOp(left, right, op)
-		java_assign.set_metadata(node)
-		self.active.push(java_assign)
+		java_bin_op = JavaBinOp(left, right, op)
+		java_bin_op.set_metadata(node)
+		self.active.push(java_bin_op)
 		if DEBUG: print "-----------end node   %s -----------" % node.__class__.__name__
 
 	def visit_Mult(self, node):
@@ -330,9 +330,9 @@ class MyVisitor(ast.NodeVisitor):
 		self.iter_field(node.op)
 		op = self.active.pop()
 
-		java_assign = JavaBoolOp(java_tuple, op)
-		java_assign.set_metadata(node)
-		self.active.push(java_assign)
+		java_bool_op = JavaBoolOp(java_tuple, op)
+		java_bool_op.set_metadata(node)
+		self.active.push(java_bool_op)
 
 	def visit_And(self, node):
 		if DEBUG: 
