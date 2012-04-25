@@ -223,10 +223,14 @@ class JavaBoolOp(JavaBinOp):
 		self.op = op
 
 	def emit(self,e):
+		e.emit("(")
 		self.values.list[0].emit(e)
+		e.emit(")")
 		for o in range(1,len(self.values.list)):
 			self.op.emit(e)
+			e.emit("(")
 			self.values.list[o].emit(e)
+			e.emit(")")
 		return False
 
 
