@@ -472,7 +472,7 @@ class MyVisitor(ast.NodeVisitor):
 			types_set = set()
 			self.return_types[function_node] = types_set
 		types_set |= self.infer_return_type(function_node, node.lineno)
-		
+
 		java_return.set_metadata(node)
 		self.active.push(java_return)
 
@@ -579,7 +579,6 @@ class MyVisitor(ast.NodeVisitor):
 		self.active.push(JavaUAdd())		
 
 	def visit_TryExcept(self, node):
-
 		start = self.active.size()
 		self.iter_field(node.body)
 		end = self.active.size()
