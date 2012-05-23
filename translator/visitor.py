@@ -638,3 +638,25 @@ class MyVisitor(ast.NodeVisitor):
 
 	def visit_Break(self, node):
 		self.active.push(JavaBreak())
+
+
+	def visit_comprehension(self, node):
+		if DEBUG:
+			print "-----------start node  %s -----------" % node.__class__.__name__
+			print ast.dump(node)
+		self.iter_field(node.target)
+		target = self.active.pop()
+		self.iter_field(node.iter)
+		iterator = self.active.pop()
+
+		body = JavaStatements()
+		if node.ifs:
+			start = self.active.size()
+			for if_ in node.ifs:
+				self.iter_field(if_)
+			end = self.active.size()
+			self.fill(body, end-start)
+
+		obj = JavaComprehension(target, iterator, body)
+		#obj.set_metadata(node)
+		self.active.push(obj)

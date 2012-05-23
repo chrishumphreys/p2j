@@ -885,3 +885,23 @@ class JavaBreak():
 	def emit(self, e):
 		e.emit("break")
 		return False
+
+class JavaComprehension(JavaBase):
+    def __init__(self, target, iterator, body):
+        JavaBase.__init__(self)
+        self.target = target
+        self.iterator = iterator
+        self.body = body
+
+    def emit(self, e):
+        self.emit_base(e)
+        e.emit("list_comprehension (")
+        self.target.emit(e)
+        e.emit(" : ")
+        self.iterator.emit(e)
+        self.emit_line_with_comment(e, ") {")
+        e.indentation_level_up()
+        self.body.emit(e)
+        e.indentation_level_down()
+        e.emit("}")
+
