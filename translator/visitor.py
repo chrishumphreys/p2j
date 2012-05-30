@@ -624,7 +624,7 @@ class MyVisitor(ast.NodeVisitor):
 		obj.set_metadata(node)
 		self.active.push(obj)
 
-	def visit_While(self,node):
+	def visit_While(self, node):
 		self.iter_field(node.test)
 		test = self.active.pop()
 		start = self.active.size()
