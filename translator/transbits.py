@@ -470,6 +470,9 @@ class JavaTuple(JavaList):
 		self.name = "anonymous_list"
 		self.type_name = None
 
+	def _parenthesis(self):
+		return True
+
 	def set_type(self, typename):
 		self.type_name = typename
 
