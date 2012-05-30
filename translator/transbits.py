@@ -756,7 +756,7 @@ class JavaFor(JavaBase):
 
 	def emit(self, e):
 		self.emit_base(e)
-		e.emit("for(")
+		e.emit("for (")
 		self.target.emit(e)
 		e.emit(":")
 		self.iterator.emit(e)
