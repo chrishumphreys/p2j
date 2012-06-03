@@ -20,7 +20,7 @@
  """
 
 class JavaBase():
-	def __init__(self, line_num=0, emit_line_numbers=False):
+	def __init__(self, line_num=0, emit_line_numbers=True):
 		self.line_num = line_num
 		self.emit_line_numbers = emit_line_numbers
 
@@ -59,9 +59,7 @@ class JavaBase():
 
 	def emit_line_with_comment(self, e, fragment):
 		e.emit(fragment)
-		comment_emitted = self.emit_comment(e)
-		e.emit_new_line()
-		return comment_emitted
+		return self.emit_comment_and_new_line(e)
 
 	def set_metadata(self, node):
 		lineno = node.lineno
