@@ -206,7 +206,7 @@ class StringEmitter():
 		self.code_line = ""
 		self.out_line_num += 1
 
-	def emit_line(self, fragment) :
+	def emit_line(self, fragment):
 		self.emit(fragment)
 		self.emit_new_line()
 
