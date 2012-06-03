@@ -148,11 +148,11 @@ class JavaAssign(JavaBase):
 		self.value = value
 
 
-	def emit(self,e):
+	def emit(self, e):
 		self.emit_base(e)
 
 		#Check whether target handles assignment e.g. s['d'] = val which becomes s.get('d', val)
-        	swallowAssign = getattr(self.target, "swallows_assign", None)
+        swallowAssign = getattr(self.target, "swallows_assign", None)
 		if swallowAssign:
 			if swallowAssign():
 				#allow the target to process the assignment...
@@ -198,7 +198,7 @@ class JavaBinOp(JavaBase):
 		self.right = right
 		self.op = op
 
-	def emit(self,e):
+	def emit(self, e):
 		self.emit_base(e)
 
 		#Check whether op handles arguments e.g. 
