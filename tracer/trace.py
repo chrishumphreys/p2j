@@ -2,9 +2,12 @@
         Written By:
                 Chris Humphreys
                 Email: < chris (--AT--) habitualcoder [--DOT--] com >
- 
-        Copyright Chris Humphreys 2010
- 
+                Jan Weiß
+                Email: < jan (--AT--) geheimwerk [--DOT--] de >
+
+        Copyright 2010 Chris Humphreys
+        Copyright 2012-2013 Jan Weiß
+
         This program is free software; you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
         the Free Software Foundation; either version 3 of the License, or
