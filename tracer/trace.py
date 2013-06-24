@@ -31,9 +31,9 @@ from collections import OrderedDict # Requires Python 2.7+
 import pprint
 import cPickle
 
-from gameengine import *
+from gameengine import * # Change this to import everything from the file containing main().
 
-TRACE_BASE = "/home/chris/ab/gamemenu.py"
+TRACE_BASE = "/home/chris/ab/gamemenu.py" # Change this to the file you want to trace.
 
 TRACE_FILE_EXT='.trace'
 TRACE_RETURN_FILE_EXT='.return-trace'
