@@ -2,8 +2,11 @@
         Written By:
                 Chris Humphreys
                 Email: < chris (--AT--) habitualcoder [--DOT--] com >
- 
-        Copyright Chris Humphreys 2010
+                Jan Weiß
+                Email: < jan (--AT--) geheimwerk [--DOT--] de >
+
+        Copyright 2010 Chris Humphreys
+        Copyright 2012-2013 Jan Weiß
  
         This program is free software; you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
@@ -25,15 +28,17 @@ import sys
 
 from parser import *
 
-TRACE_FILENAME='.trace'
+TRACE_FILE_EXT='.trace'
+TRACE_RETURN_FILE_EXT='.return-trace'
 
+USE_RELATIVE_SOURCE_FILE_PATHS = True
 
 def translate_files(input_filename):
 
-	pathname = "/home/chris/ab/" + input_filename
+	pathname = os.getcwd() + "/" + input_filename
 
 	#load argument trace file
-	args = ArgTrace.load_trace_file(input_filename + TRACE_FILENAME)
+	args = ArgTrace.load_trace_files(input_filename, TRACE_FILE_EXT, TRACE_RETURN_FILE_EXT, USE_RELATIVE_SOURCE_FILE_PATHS)
 	
 	f = open(pathname)
 	code = f.read() 
@@ -47,6 +52,7 @@ def translate_files(input_filename):
 	#pathname = os.path.abspath(input_filename)
 	p = Parser(args, pathname)
 	e = OutputEmitter(path)
+	e.enable_indentation(True)
 	p.parse(code, e)
 	e.finish()
 	

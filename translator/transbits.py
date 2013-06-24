@@ -2,8 +2,11 @@
         Written By:
                 Chris Humphreys
                 Email: < chris (--AT--) habitualcoder [--DOT--] com >
- 
-        Copyright Chris Humphreys 2010
+                Jan Weiß
+                Email: < jan (--AT--) geheimwerk [--DOT--] de >
+
+        Copyright 2010 Chris Humphreys
+        Copyright 2012-2013 Jan Weiß
  
         This program is free software; you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
@@ -19,111 +22,187 @@
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
  """
 
-class JavaClass():
+class JavaBase():
+	def __init__(self, line_num=0, emit_line_numbers=True):
+		self.line_num = line_num
+		self.emit_line_numbers = emit_line_numbers
+
+	def emit_base(self, e):
+		e.set_source_line(self.line_num)
+	
+	def emit_comment(self, e):
+		self.emit_base(e)
+		self.emit_comment_without_base(e)
+
+	def emit_comment_without_base(self, e):
+		comment_emitted = False
+		is_fresh_line = e.is_fresh_line()
+
+		line_comments = e.line_comments
+
+		if self.line_num > 0 and self.line_num in line_comments:
+			if not is_fresh_line: 
+				e.emit(" ")
+			e.emit_comment("//" + line_comments[self.line_num], self.line_num)
+			comment_emitted = True
+
+		if self.emit_line_numbers and self.line_num > 0:
+			if not is_fresh_line or comment_emitted: 
+				e.emit(" ")
+			e.emit("//"" Line " + str(self.line_num))
+			comment_emitted = True
+
+		return comment_emitted
+
+
+	def emit_comment_and_new_line(self, e):
+		comment_emitted = self.emit_comment(e)
+		e.emit_new_line()
+		return comment_emitted
+
+	def emit_line_with_comment(self, e, fragment):
+		e.emit(fragment)
+		return self.emit_comment_and_new_line(e)
+
+	def set_metadata(self, node):
+		lineno = node.lineno
+		self.line_num = lineno
+
+
+class JavaClass(JavaBase):
 
 	def __init__(self, name, supers, body):
-		self.name=name
+		JavaBase.__init__(self)
+		self.name = name
 		self.supers = supers
 		self.functions = body
 		body.set_parent(self)
 
 	def emit(self, e):
+		self.emit_base(e)
+
 		e.emit("public class ")
 		e.emit(self.name)
 
 		if self.supers and len(self.supers) > 0:
 			e.emit(" extends ")
 			self.supers.emit(e)
-		
-		e.emit_line(" {")
+
+		self.emit_line_with_comment(e, " {")
+		e.indentation_level_up()
 		self.functions.emit(e)
-		
+
+		e.indentation_level_down()
 		e.emit_line("}")
+		e.class_end()
 		return True
 
 
-class JavaFunction():
+class JavaFunction(JavaBase):
 
 	def __init__(self, name, args, body):
+		JavaBase.__init__(self)
 		self.name = name
 		self.args = args
 		self.body = body
 		self.class_name = None
+		self.return_type = "void"
 
 	def emit(self,e):
+		self.emit_base(e)
+
 		if self.is_constructor():
 			e.emit("public ")
 			e.emit(self.class_name)			
 		else:
+			if self.return_type is not None:
+				return_type = "/".join(self.return_type)
+			else:
+				return_type = "void"
+
 			if self.args.list_contains_self():
-				e.emit("public void ")
+				e.emit("public " + return_type + " ")
 			else:					
-				e.emit("public static void ")
+				e.emit("public static " + return_type + " ")
 			e.emit(self.name)
 		e.emit("(")
 		self.args.emit(e, True)
-		e.emit_line("){")
+		self.emit_line_with_comment(e, ") {")
+		e.indentation_level_up()
 		self.body.emit(e)
+		e.indentation_level_down()
 		e.emit_line("}")
 		return True
 
 	def set_class(self, clazz):
 		self.class_name = clazz.name
 
+	def set_return_type(self, return_type):
+		self.return_type = return_type
+
 	def is_constructor(self):
 		return self.name == '__init__'
 
-class JavaAssign():
+class JavaAssign(JavaBase):
 
 	def __init__(self, target, value):
+		JavaBase.__init__(self)
 		self.target = target
 		self.value = value
 
 
-	def emit(self,e):
+	def emit(self, e):
+		self.emit_base(e)
+
 		#Check whether target handles assignment e.g. s['d'] = val which becomes s.get('d', val)
-        	swallowAssign = getattr(self.target, "swallows_assign", None)
+        swallowAssign = getattr(self.target, "swallows_assign", None)
 		if swallowAssign:
 			if swallowAssign():
 				#allow the target to process the assignment...
 				self.target.emit_store(e, self.value)
 		else:
-			#process the assignment in normal manner...
+			#process the assignment in the normal manner...
 			self.target.emit(e)
 			e.emit(" = ")
 			self.value.emit(e)
 
-		e.emit_line(";")
+		self.emit_line_with_comment(e, ";")
+
 		return True
 
 	def default_swallow_assign(self):
 		return False
 
-class JavaAugAssign():
+class JavaAugAssign(JavaBase):
 
 	def __init__(self, target, value, op):
+		JavaBase.__init__(self)
 		self.target = target
 		self.value = value
 		self.op = op
 
 
 	def emit(self,e):
+		self.emit_base(e)
+
 		self.target.emit(e)
 		self.op.emit(e)
 		e.emit("= ")
 		self.value.emit(e)
-		e.emit_line(";")
+		self.emit_line_with_comment(e, ";")
 		return True
 
 
-class JavaBinOp():
+class JavaBinOp(JavaBase):
 
 	def __init__(self, left, right, op):
+		JavaBase.__init__(self)
 		self.left = left
 		self.right = right
 		self.op = op
 
-	def emit(self,e):
+	def emit(self, e):
+		self.emit_base(e)
 
 		#Check whether op handles arguments e.g. 
         	swallowsBinOp = getattr(self.op, "swallows_binop", None)
@@ -145,36 +224,45 @@ class JavaBoolOp(JavaBinOp):
 		self.op = op
 
 	def emit(self,e):
+		e.emit("(")
 		self.values.list[0].emit(e)
+		e.emit(")")
 		for o in range(1,len(self.values.list)):
 			self.op.emit(e)
+			e.emit("(")
 			self.values.list[o].emit(e)
+			e.emit(")")
 		return False
 
 
-class JavaValueList():
+class JavaValueList(JavaBase):
 	def __init__(self, contents):
+		JavaBase.__init__(self)
 		self.contents = contents
 
 	def emit(self,e):
+		self.emit_base(e)
+		
 		if self.contents and len(self.contents.list) > 0:
 			e.emit("Arrays.asList({")
 			length = len(self.contents.list)
 			for c in range(0, length):
 				self.contents.list[c].emit(e)
 				if c < length-1:
-					e.emit(",")
+					e.emit(", ")
 			e.emit("})")
 		else:
 			e.emit("new ArrayList()")
 		return False
 
 
-class JavaBinaryOperator():
+class JavaBinaryOperator(JavaBase):
 	def __init__(self, op):
+		JavaBase.__init__(self)
 		self.op = op
 
 	def emit(self,e):
+		self.emit_base(e)
 		e.emit(self.op)
 		return False
 
@@ -254,7 +342,7 @@ class JavaMod(JavaBinaryOperator):
 	def emit_with_args(self, left, right, e):
 		e.emit("String.format(")
 		left.emit(e)
-		e.emit(",")
+		e.emit(", ")
 		right.emit(e)
 		e.emit(")")
 
@@ -266,19 +354,24 @@ class JavaDiv(JavaBinaryOperator):
 		JavaBinaryOperator.__init__(self, "/")
 
 
-class JavaVariable():
+class JavaVariable(JavaBase):
 
 	def __init__(self, name, context):
+		JavaBase.__init__(self)
 		self.name = name
 		self.context = context
 		self.type_name = None
 
 	def emit(self,e):
+		self.emit_base(e)
+
 		if self.type_name:
 			e.emit(self.type_name)
 			e.emit(" ")
-		if self.name == 'True' or self.name == 'False':
-			e.emit(self.name.lower())
+		if self.name == 'True':
+			e.emit("true")
+		elif self.name == 'False':
+			e.emit("false")
 		elif self.name == 'self':
 			e.emit("this")
 		elif self.name == 'None':
@@ -291,21 +384,26 @@ class JavaVariable():
 		return self.name == 'self'
 
 	def set_type(self, typename):
-		self.type_name = typename	
+		if typename is not None:
+			self.type_name = typename
 
-class JavaNum():
+class JavaNum(JavaBase):
 	def __init__(self, val):
+		JavaBase.__init__(self)
 		self.value = val
 
 	def emit(self, e):
+		self.emit_base(e)
 		e.emit(self.value)
 		return False
 
-class JavaStr():
+class JavaStr(JavaBase):
 	def __init__(self, val):
+		JavaBase.__init__(self)
 		self.value = val
 
 	def emit(self, e):
+		self.emit_base(e)
 		e.emit('"')
 		e.emit(self.value) 
 		e.emit('"')
@@ -313,22 +411,32 @@ class JavaStr():
 
 	def emit_comment(self, e):
 		if self.value.find("\n") > -1:
+			comment_lines = self.value.split("\n")
+			lines_count = len(comment_lines)
+			self.line_num -= lines_count # calculate and set line the comment starts on
+			self.emit_base(e)
 			e.emit('/*')
-			e.emit(self.value) 
+			for i in range(0, lines_count):
+				self.line_num += 1
+				e.set_source_line(self.line_num)
+				e.emit(comment_lines[i])
 			e.emit("*/")
 		else:
+			self.emit_base(e)
 			e.emit("//")
 			e.emit(self.value)
 		return False
 
-class JavaList():
+class JavaList(JavaBase):
 	def __init__(self):
+		JavaBase.__init__(self)
 		self.list = []
 
 	def add(self, obj):
 		self.list.append(obj)
 
 	def emit(self,e, skip_self = False):
+		self.emit_base(e)
 		# Don't always need these parenthesis
 		if self._parenthesis():
 			e.emit("(")
@@ -336,7 +444,7 @@ class JavaList():
 			if not (skip_self and self._item_is_self(i)):
 				self.list[i].emit(e)
 				if i < len(self.list)-1:
-					e.emit(",")
+					e.emit(", ")
 		if self._parenthesis():
 			e.emit(")")
 		return False
@@ -360,6 +468,15 @@ class JavaList():
 class JavaTuple(JavaList):
 	def __init__(self):
 		JavaList.__init__(self)
+		self.name = "anonymous_list"
+		self.type_name = None
+
+	def _parenthesis(self):
+		return True
+
+	def set_type(self, typename):
+		self.type_name = typename
+
 
 class JavaArgsList(JavaList):
 	def __init__(self):
@@ -369,32 +486,38 @@ class JavaArgsList(JavaList):
 		return True
 
 
-class JavaStatements():
+class JavaStatements(JavaBase):
 	def __init__(self):
+		JavaBase.__init__(self)
 		self.list = []
 
 	def add(self, obj):
 		self.list.append(obj)
 
 	def emit(self,e):
+		self.emit_base(e)
 		for i in range(0, len(self.list)):
 			newline = False
-			#This is a hack to  attempt to deal with comments which appear as
+			#This is a hack to attempt to deal with comments which appear as
 			#JavaStr objects within statements - something real strings can't 
 			#be (for valid code)
 			if isinstance(self.list[i], JavaStr):
-				newline =self.list[i].emit_comment(e)
+				newline = self.list[i].emit_comment(e)
 				#Only output a newline after statement if object didn't itself
 				if not newline:
 					e.emit_new_line()
 			else:
 				if isinstance(self.list[i], JavaClass):
 					e.class_start(self.list[i].name)
-			
+
 				newline = self.list[i].emit(e)
 				#Only output a newline after statement if object didn't itself
 				if not newline:
 					e.emit(";")
+					if self.line_num > 0:
+						self.list[i].emit_comment(e)
+					else:
+						self.emit_comment(e)
 					e.emit_new_line()
 
 	def set_parent(self, parent):
@@ -402,44 +525,56 @@ class JavaStatements():
 			if isinstance(self.list[i], JavaFunction):
 				self.list[i].set_class(parent)
 		
-class JavaIf():
+class JavaIf(JavaBase):
 	def __init__(self, test, body, orelse):
+		JavaBase.__init__(self)
 		self.test = test
 		self.body = body
 		self.orelse = orelse
 
 	def emit(self,e):
+		self.emit_base(e)
 		e.emit("if (")
 		self.test.emit(e)
-		e.emit_line(") {")
+		self.emit_line_with_comment(e, ") {")
+		e.indentation_level_up()
 		self.body.emit(e)
 		if self.orelse:
+			e.indentation_level_down()
 			e.emit_line("} else {")
-			self.orelse.emit(e)
+			e.source_line_num += 1 # This is a hack to prevent an empty line
+			e.indentation_level_up()
+			self.orelse.emit(e) # This would have the side effect of emitting a line break after the else due to the way formatting retention is implemented
+			e.indentation_level_down()
 			e.emit_line("}")
 		else:
+			e.indentation_level_down()
 			e.emit_line("}")
 		return True
 
-class JavaCall():
+class JavaCall(JavaBase):
 	def __init__(self, name, args):
+		JavaBase.__init__(self)
 		self.name = name
 		self.args = args
 
 	def emit(self, e):
+		self.emit_base(e)
 		self.name.emit(e)
 		e.emit("(")
 		self.args.emit(e)
 		e.emit(")")
 		return False
 
-class JavaCompare():
+class JavaCompare(JavaBase):
 	def __init__(self, left, ops, comparators):
+		JavaBase.__init__(self)
 		self.left = left
 		self.ops = ops
 		self.comparators = comparators
 
 	def emit(self, e):
+		self.emit_base(e)
 		#Check whether op handles the arguments e.g. 'd' in s which becomes s.contains('d')
         	swallowArguments = getattr(self.ops, "swallows_arguments", None)
 		if swallowArguments:
@@ -501,9 +636,10 @@ class JavaEq(JavaBinaryOperator):
 			comparators.emit(e)
 			e.emit(")")
 
-class JavaNotIn():
+class JavaNotIn(JavaBase):
 
 	def emit(self, e, comparators, left):
+		self.emit_base(e)
 		e.emit("!")
 		comparators.emit(e)
 		e.emit(".contains(")
@@ -513,9 +649,10 @@ class JavaNotIn():
 	def swallows_arguments(self):
 		return True
 
-class JavaIn():
+class JavaIn(JavaBase):
 
 	def emit(self, e, comparators, left):
+		self.emit_base(e)
 		comparators.emit(e)
 		e.emit(".contains(")
 		left.emit(e)
@@ -526,21 +663,25 @@ class JavaIn():
 
 
 
-class JavaAttribute():
+class JavaAttribute(JavaBase):
 	def __init__(self, value, attr):
+		JavaBase.__init__(self)
 		self.value = value
 		self.attr = attr
 	def emit(self, e):
+		self.emit_base(e)
 		self.value.emit(e)
 		e.emit(".")
 		e.emit(self.attr)
 		return False		
 
-class JavaReturn():
+class JavaReturn(JavaBase):
 	def __init__(self, value):
+		JavaBase.__init__(self)
 		self.value = value
 
 	def emit(self, e):
+		self.emit_base(e)
 		if self.value:	
 			e.emit("return ")
 			self.value.emit(e)
@@ -548,13 +689,15 @@ class JavaReturn():
 			e.emit("return")
 		return False
 
-class JavaSubscript():
+class JavaSubscript(JavaBase):
 	def __init__(self, value, jslice, store):
+		JavaBase.__init__(self)
 		self.value = value
 		self.jslice = jslice
 		self.store = store
 
 	def emit(self, e):
+		self.emit_base(e)
 		self.value.emit(e)
 		if isinstance(self.jslice, JavaSlice):
 			self.jslice.emit(e)			
@@ -568,10 +711,11 @@ class JavaSubscript():
 		return False
 
 	def emit_store(self, e, value):
+		self.emit_base(e)
 		self.value.emit(e)
 		e.emit(".put(")
 		self.jslice.emit(e)
-		e.emit(",")
+		e.emit(", ")
 		value.emit(e)
 		e.emit(")")
 		return False
@@ -580,18 +724,20 @@ class JavaSubscript():
 		return True
 
 
-class JavaSlice():
+class JavaSlice(JavaBase):
 	def __init__(self, lower, upper, step):
+		JavaBase.__init__(self)
 		self.upper = upper
 		self.lower = lower
 		self.step = step
 
 	def emit(self, e):
+		self.emit_base(e)
 		#Assume it is a string - most common case...
 		if self.upper:
 			e.emit(".subSequence(")
 			self.lower.emit(e)
-			e.emit(",")
+			e.emit(", ")
 			self.upper.emit(e)
 		else:
 			e.emit(".substring(")
@@ -602,30 +748,38 @@ class JavaSlice():
 		return False
 
 
-class JavaFor():
+class JavaFor(JavaBase):
 	def __init__(self, target, iterator, body):
+		JavaBase.__init__(self)
 		self.target = target
 		self.iterator = iterator
 		self.body = body
 
 	def emit(self, e):
-		e.emit("for(")
+		self.emit_base(e)
+		e.emit("for (")
 		self.target.emit(e)
 		e.emit(":")
 		self.iterator.emit(e)
-		e.emit("){")
+		self.emit_line_with_comment(e, ") {")
+		e.indentation_level_up()
 		self.body.emit(e)
+		e.indentation_level_down()
 		e.emit("}")
 
-class JavaPass():
+class JavaPass(JavaBase):
 	def emit(self,e):
-		pass
+		self.emit_base(e)
+		if self.emit_comment(e):
+			e.emit_new_line()
 
-class JavaPrint():
+class JavaPrint(JavaBase):
 	def __init__(self, values):
+		JavaBase.__init__(self)
 		self.values = values
 
 	def emit(self,e):
+		self.emit_base(e)
 		e.emit("System.out.println(")
 		self.values.emit(e)
 		e.emit(")")
@@ -658,58 +812,76 @@ class JavaUnaryOp(JavaBinOp):
 		self.operand.emit(e)
 		return False
 
-class JavaTryExcept():
+class JavaTryExcept(JavaBase):
 
 	def __init__(self, body, handlers):
+		JavaBase.__init__(self)
 		self.body = body
 		self.handlers = handlers
 
 	def emit(self,e):
-		e.emit("try{")
+		self.emit_base(e)
+		self.emit_line_with_comment(e, "try {")
+		e.indentation_level_up()
 		self.body.emit(e)
+		e.indentation_level_down()
 		e.emit("}")
 		self.handlers.emit(e)
 		return False
 
-class JavaTryFinally():
+class JavaTryFinally(JavaBase):
 
 	def __init__(self, body, finalbody):
+		JavaBase.__init__(self)
 		self.body = body
 		self.finalbody = finalbody
 
 	def emit(self,e):
-		e.emit("try{")
+		self.emit_base(e)
+		self.emit_line_with_comment(e, "try {")
+		e.indentation_level_up()
 		self.body.emit(e)
-		e.emit("} finally {")
+		e.indentation_level_down()
+		e.emit("} finally {") # See else-clause above
+		e.indentation_level_up()
 		self.finalbody.emit(e)
+		e.indentation_level_down()
 		e.emit("}")
 		return False
 
 
-class JavaExceptHandler():
+class JavaExceptHandler(JavaBase):
 	def __init__(self, name, body):
+		JavaBase.__init__(self)
 		self.name = name
 		self.body = body
 
 	def emit(self,e):
+		self.emit_base(e)
 		e.emit("catch (")
 		self.name.emit(e)
-		e.emit("){")
+		self.emit_line_with_comment(e, ") {")
+		e.indentation_level_up()
 		self.body.emit(e)
+		e.indentation_level_down()
 		e.emit("}")
 		return False
 
-class JavaWhile():
+class JavaWhile(JavaBase):
 
 	def __init__(self, test, body):
+		JavaBase.__init__(self)
 		self.body = body
 		self.test = test
 
 	def emit(self,e):
+		self.emit_base(e)
 		e.emit("while ")
 		self.test.emit(e)
-		e.emit("{")
+		self.emit_line_with_comment(e, "{")
+		e.indentation_level_up()
 		self.body.emit(e)
+		e.indentation_level_down()
 		e.emit("}")
 		return False
 
@@ -717,3 +889,23 @@ class JavaBreak():
 	def emit(self, e):
 		e.emit("break")
 		return False
+
+class JavaComprehension(JavaBase):
+    def __init__(self, target, iterator, body):
+        JavaBase.__init__(self)
+        self.target = target
+        self.iterator = iterator
+        self.body = body
+
+    def emit(self, e):
+        self.emit_base(e)
+        e.emit("list_comprehension (")
+        self.target.emit(e)
+        e.emit(" : ")
+        self.iterator.emit(e)
+        self.emit_line_with_comment(e, ") {")
+        e.indentation_level_up()
+        self.body.emit(e)
+        e.indentation_level_down()
+        e.emit("}")
+
